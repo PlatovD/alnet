@@ -5,12 +5,10 @@ import io.github.platovd.alnet.dto.request.RefreshRequest;
 import io.github.platovd.alnet.dto.request.SignInRequest;
 import io.github.platovd.alnet.dto.request.SignUpRequest;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.entity.util.Role;
-import io.github.platovd.alnet.exception.InvalidRefreshToken;
+import io.github.platovd.alnet.exception.InvalidRefreshTokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +24,7 @@ public class AuthenticationService {
         User user = User.builder().username(signUpRequest.getName())
                 .email(signUpRequest.getEmail())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .role(Role.ROLE_USER).build();
+                .build();
 
         userService.create(user);
         return new JWTAuthenticationResponse(jwtService.generateJWT(user), jwtService.generateJWTRefresh(user));
@@ -37,16 +35,16 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(signInRequest.getName(), signInRequest.getPassword())
         );
 
-        UserDetails user = userService.userDetailsService().loadUserByUsername(signInRequest.getName());
+        User user = userService.getByUsername(signInRequest.getName());
         return new JWTAuthenticationResponse(jwtService.generateJWT(user), jwtService.generateJWTRefresh(user));
     }
 
     public JWTAuthenticationResponse refresh(RefreshRequest refreshRequest) {
         var token = refreshRequest.getRefresh();
-        User user = userService.getByUsername(jwtService.extractUserName(token));
+        User user = userService.getById(jwtService.extractId(token));
         if (!"refresh".equals(jwtService.extractTokenType(token)))
-            throw new InvalidRefreshToken("Given token don't have valid type");
-        if (!jwtService.isTokenValid(token, user)) throw new InvalidRefreshToken("Given refresh token isn't valid");
+            throw new InvalidRefreshTokenException("Given token don't have valid type");
+        if (!jwtService.isTokenValid(token, user)) throw new InvalidRefreshTokenException("Given refresh token isn't valid");
         return new JWTAuthenticationResponse(jwtService.generateJWT(user), jwtService.generateJWTRefresh(user));
     }
 }

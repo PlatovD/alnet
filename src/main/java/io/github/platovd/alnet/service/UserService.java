@@ -1,14 +1,13 @@
 package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.entity.util.Role;
 import io.github.platovd.alnet.exception.EmailUsedException;
+import io.github.platovd.alnet.exception.IdNotFoundException;
 import io.github.platovd.alnet.exception.UsernameNotFoundException;
 import io.github.platovd.alnet.exception.UsernameUsedException;
 import io.github.platovd.alnet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,11 +15,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository repository;
 
-    public User save(User user) {
-        return repository.save(user);
+    public void save(User user) {
+        repository.save(user);
     }
 
-    public User create(User user) {
+    public void create(User user) {
         if (repository.existsByUsername(user.getUsername())) {
             throw new UsernameUsedException("Username is already in use");
         }
@@ -29,7 +28,7 @@ public class UserService {
             throw new EmailUsedException("Email is already in use");
         }
 
-        return save(user);
+        save(user);
     }
 
     public User getByUsername(String username) {
@@ -37,19 +36,13 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("Username wasn't found"));
     }
 
-    public UserDetailsService userDetailsService() {
-        return this::getByUsername;
-    }
-
     public User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
         return getByUsername(username);
     }
 
-    @Deprecated
-    public void getAdmin() {
-        User user = getCurrentUser();
-        user.setRole(Role.ROLE_ADMIN);
-        save(user);
+    public User getById(Long id) {
+        return repository.findById(id).orElseThrow(() -> new IdNotFoundException(("Id wasn't found")));
     }
 }

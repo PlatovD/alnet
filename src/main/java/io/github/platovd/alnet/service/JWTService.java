@@ -4,10 +4,10 @@ import io.github.platovd.alnet.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -18,20 +18,24 @@ import java.util.function.Function;
 
 @Service
 public class JWTService {
-    @Value("${jwt.singing.key}")
+    @Value("${auth.jwt.singing.key}")
     private String key;
 
-    @Value("${jwt.duration.expiration.access}")
+    @Value("${auth.jwt.duration.expiration.access}")
     private Long accessTokenExpirationDuration;
 
-    @Value("${jwt.duration.expiration.refresh}")
+    @Value("${auth.jwt.duration.expiration.refresh}")
     private Long refreshTokenExpirationDuration;
 
-    public String extractUserName(String token) {
+    public String extractUserName(String token) throws JwtException {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String extractTokenType(String token) {
+    public Long extractId(String token) throws JwtException {
+        return Long.valueOf(extractClaim(token, Claims::getId));
+    }
+
+    public String extractTokenType(String token) throws IllegalArgumentException {
         try {
             return extractAllClaims(token).get("type", String.class);
         } catch (IllegalArgumentException | JwtException e) {
@@ -39,26 +43,21 @@ public class JWTService {
         }
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isTokenValid(String token, User user) throws JwtException {
         final String username = extractUserName(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(user.getUsername()) && !isTokenExpired(token));
     }
 
-    public String generateJWT(UserDetails userDetails) {
+    public String generateJWT(User user) {
         Map<String, Object> claims = new HashMap<>();
-        if (userDetails instanceof User customUserDetails) {
-            claims.put("type", "access");
-            claims.put("id", customUserDetails.getId());
-            claims.put("email", customUserDetails.getEmail());
-            claims.put("role", customUserDetails.getRole());
-        }
-        return generateJWT(claims, userDetails, accessTokenExpirationDuration);
+        claims.put("type", "access");
+        return generateJWT(claims, user, accessTokenExpirationDuration);
     }
 
-    public String generateJWTRefresh(UserDetails userDetails) {
+    public String generateJWTRefresh(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "refresh");
-        return generateJWT(claims, userDetails, refreshTokenExpirationDuration);
+        return generateJWT(claims, user, refreshTokenExpirationDuration);
     }
 
     private boolean isTokenExpired(String token) {
@@ -69,12 +68,12 @@ public class JWTService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) throws JwtException {
         final Claims claims = extractAllClaims(token);
         return claimsResolvers.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    private Claims extractAllClaims(String token) throws JwtException {
         return Jwts.parser().verifyWith(getSigningKey(key)).build().parseSignedClaims(token).getPayload();
     }
 
@@ -83,12 +82,16 @@ public class JWTService {
         return Keys.hmacShaKeyFor(keyBites);
     }
 
-    private String generateJWT(Map<String, Object> claims, UserDetails userDetails, Long expirationDurationSeconds) {
+    private String generateJWT(Map<String, Object> claims, User user, Long expirationDurationSeconds) {
         return Jwts.builder()
                 .header().add("typ", "JWT").and()
-                .claims(claims).subject(userDetails.getUsername())
+                .id(user.getId().toString()).subject(user.getUsername()).claims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * expirationDurationSeconds))
                 .signWith(getSigningKey(key)).compact();
+    }
+
+    public boolean isTypeOf(String token, String type) {
+        return extractTokenType(token).equals(type.strip().toLowerCase());
     }
 }

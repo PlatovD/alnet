@@ -2,19 +2,36 @@ package io.github.platovd.alnet.authentication.token;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 
-public class JWTAuthToken extends Authentication {
+public class JWTAuthToken implements Authentication {
+    private final String jwtToken;
+    private UserDetails principal;
+    private List<? extends GrantedAuthority> authorities;
+    private boolean isAuthenticated = false;
+
+    public JWTAuthToken(String jwtToken) {
+        this.jwtToken = jwtToken;
+    }
+
+    public JWTAuthToken(String jwtToken, UserDetails principal, List<? extends GrantedAuthority> authorities, boolean isAuthenticated) {
+        this.jwtToken = jwtToken;
+        this.principal = principal;
+        this.authorities = authorities;
+        this.isAuthenticated = isAuthenticated;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return authorities;
     }
 
     @Override
     public Object getCredentials() {
-        return null;
+        return jwtToken;
     }
 
     @Override
@@ -24,36 +41,26 @@ public class JWTAuthToken extends Authentication {
 
     @Override
     public Object getPrincipal() {
-        return null;
+        return principal;
     }
 
     @Override
     public boolean isAuthenticated() {
-        return false;
+        return isAuthenticated;
     }
 
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return "";
-    }
-
-    @Override
-    public int hashCode() {
-        return 0;
+        this.isAuthenticated = isAuthenticated;
     }
 
     @Override
     public String getName() {
-        return "";
+        if (principal == null) return "";
+        return principal.getUsername();
+    }
+
+    public String getToken() {
+        return jwtToken;
     }
 }
