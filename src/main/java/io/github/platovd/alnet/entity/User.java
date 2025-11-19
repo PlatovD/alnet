@@ -27,7 +27,7 @@ public class User {
     @Column(name = "email", unique = true)
     private String email;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -35,6 +35,6 @@ public class User {
     )
     private List<Role> role;
 
-    @OneToMany(mappedBy = "user_id", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<RefreshToken> refreshTokens;
 }

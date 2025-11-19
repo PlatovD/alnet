@@ -1,5 +1,8 @@
 package io.github.platovd.alnet.config;
 
+import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.authentication.entrypoint.JWTEntryPointAccessDenied;
+import io.github.platovd.alnet.authentication.entrypoint.JWTEntrypointUnauthenticated;
 import io.github.platovd.alnet.authentication.filter.JWTAuthenticationFilter;
 import io.github.platovd.alnet.authentication.provider.JWTAuthenticationProvider;
 import io.github.platovd.alnet.authentication.userdetail.CustomUserDetailService;
@@ -13,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -24,7 +28,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfig {
     private final CustomUserDetailService customUserDetailService;
     private final JWTAuthenticationProvider jwtAuthenticationProvider;
-    private final JWTAuthenticationFilter jwtAuthenticationFilter;
+    private final SecurityContextWrapper securityContextWrapper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -32,7 +36,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationProvider(AuthenticationManagerBuilder builder) throws Exception {
+    public JWTAuthenticationFilter jwtAuthenticationFilter(AuthenticationManager authenticationManager, AuthenticationEntryPoint entryPoint) throws Exception {
+        JWTAuthenticationFilter filter = new JWTAuthenticationFilter(securityContextWrapper, entryPoint);
+        filter.setAuthManager(authenticationManager);
+        return filter;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
         builder
                 .authenticationProvider(jwtAuthenticationProvider)
                 .userDetailsService(customUserDetailService).passwordEncoder(passwordEncoder());
@@ -40,7 +52,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JWTAuthenticationFilter filter,
+            JWTEntryPointAccessDenied accessDeniedEP,
+            JWTEntrypointUnauthenticated unauthenticatedEP
+    ) throws Exception {
         http
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
@@ -49,9 +66,11 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/endpoint", "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/auth/refresh").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()).exceptionHandling(e -> {
+                    e.authenticationEntryPoint(unauthenticatedEP).accessDeniedHandler(accessDeniedEP);
+                })
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS));
-        http.addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class);
+        http.addFilterBefore(filter, BasicAuthenticationFilter.class);
         return http.build();
     }
 }

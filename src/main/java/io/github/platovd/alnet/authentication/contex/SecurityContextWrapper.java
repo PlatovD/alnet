@@ -1,8 +1,6 @@
 package io.github.platovd.alnet.authentication.contex;
 
-import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.exception.NoAuthenticationCredentialsException;
-import io.github.platovd.alnet.service.JWTService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -13,14 +11,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class SecurityContextWrapper {
     @Value("${auth.anonymous.key}")
     private String anonymousAuthKey;
-    private final JWTService jwtService;
 
 
     public SecurityContext getContext() {
@@ -36,14 +32,12 @@ public class SecurityContextWrapper {
                 && authentication.isAuthenticated();
     }
 
-    public Map<String, String> getAuthenticationCredentials() {
+    public Object getAuthenticationCredentials() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         if (!isAuthenticated())
             throw new NoAuthenticationCredentialsException("User authentication is not strong or not exists");
-        if (!(authentication instanceof JWTAuthToken)) return Map.of("name", authentication.getName());
-        JWTAuthToken jwtAuth = (JWTAuthToken) authentication;
-
+        return authentication.getCredentials();
     }
 
     public void unAuthenticate() {
@@ -60,7 +54,7 @@ public class SecurityContextWrapper {
         return getContext().getAuthentication();
     }
 
-    public Authentication setAuthentication(Authentication authentication) {
+    public void setAuthentication(Authentication authentication) {
         unAuthenticate();
         getContext().setAuthentication(authentication);
     }

@@ -5,6 +5,7 @@ import io.github.platovd.alnet.authentication.util.AuthUtil;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.IllegalTokenClassException;
 import io.github.platovd.alnet.exception.InvalidAccessTokenException;
+import io.github.platovd.alnet.exception.UnknownAuthenticationException;
 import io.github.platovd.alnet.exception.UserServiceException;
 import io.github.platovd.alnet.service.JWTService;
 import io.github.platovd.alnet.service.UserService;
@@ -46,14 +47,14 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
             return new JWTAuthToken(
                     token,
                     details,
-                    (List<? extends GrantedAuthority>) details.getAuthorities(),
+                    details.getAuthorities(),
                     true
             );
 
         } catch (JwtException | UserServiceException exception) {
-            throw new InvalidAccessTokenException("Authentication went wrong. Access denied");
+            throw new InvalidAccessTokenException("Authentication went wrong. Access denied. Cause: " + exception.getMessage());
         } catch (Exception e) {
-            throw new IllegalArgumentException("Authentication failed. Unknown exception");
+            throw new UnknownAuthenticationException("Authentication failed. Unknown exception");
         }
     }
 

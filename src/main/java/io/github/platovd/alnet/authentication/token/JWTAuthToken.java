@@ -5,19 +5,18 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
 
 public class JWTAuthToken implements Authentication {
     private final String jwtToken;
     private UserDetails principal;
-    private List<? extends GrantedAuthority> authorities;
+    private Collection<? extends GrantedAuthority> authorities;
     private boolean isAuthenticated = false;
 
     public JWTAuthToken(String jwtToken) {
         this.jwtToken = jwtToken;
     }
 
-    public JWTAuthToken(String jwtToken, UserDetails principal, List<? extends GrantedAuthority> authorities, boolean isAuthenticated) {
+    public JWTAuthToken(String jwtToken, UserDetails principal, Collection<? extends GrantedAuthority> authorities, boolean isAuthenticated) {
         this.jwtToken = jwtToken;
         this.principal = principal;
         this.authorities = authorities;
