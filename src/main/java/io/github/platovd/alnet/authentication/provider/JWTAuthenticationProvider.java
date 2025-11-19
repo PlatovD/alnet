@@ -14,12 +14,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
+/**
+ * Кастомный класс аутентификации, который добавляется в ProviderManager, который в свою очередь имплементит
+ * Authentication Manager. При создании Authentication Manager в Security Config этот компонент добавляется в
+ * коллекцию Authentication провайдеров, и для тех объектов Authentication, для которых этот провайдер подойдет,
+ * он будет вызван. Если этот провайдер не сможет произвести аутентификацию - он выбросит AuthenticationException,
+ * иначе - вернет объект Authentication, который будет уже иметь isAuthenticated() = true.
+ */
 @Component
 @RequiredArgsConstructor
 public class JWTAuthenticationProvider implements AuthenticationProvider {
@@ -29,21 +33,28 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        // смотрим, передали ли нам поддерживаемую Authentication
         if (!this.supports(authentication.getClass()))
             throw new IllegalTokenClassException(
                     "JWTAuthenticationProvider only supports JWTAuthToken, but got: " +
                             authentication.getClass().getName()
             );
-
+        // кастим
         JWTAuthToken jwtAuth = (JWTAuthToken) authentication;
+        // пробуем вытащить claims из токена, проверить наличие пользователя, проверить валидность токена
         try {
             String token = jwtAuth.getToken();
-            Long userId = jwtService.extractId(token);
-            User user = userService.getById(userId);
+            Long userId = jwtService.extractId(token); // выбросит JwtException, если токен не валиден по ключу шифрования
+            User user = userService.getById(userId); // выбросит UserServiceException если не найдет
 
+            // проверяю токен на истечение, проверяю тип токена
             if (!jwtService.isTypeOf(token, REQUIRED_TOKEN_TYPE) || !jwtService.isTokenValid(token, user))
                 throw new InvalidAccessTokenException("Given token isn't valid for user");
+
+            // маппим User -> UserDetails для сохранения информации о пользователе в объекте Authentication
+            // делаю это для того, чтобы отделить бизнес логику и обертку для Security
             UserDetails details = AuthUtil.fromUserToUserDetails(user);
+            // возвращаю Authentication с isAuthenticated() = true
             return new JWTAuthToken(
                     token,
                     details,
