@@ -59,7 +59,8 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
                     token,
                     details,
                     details.getAuthorities(),
-                    true
+                    true,
+                    userId
             );
 
         } catch (JwtException | UserServiceException exception) {

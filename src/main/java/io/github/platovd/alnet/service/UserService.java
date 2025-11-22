@@ -1,23 +1,22 @@
 package io.github.platovd.alnet.service;
 
+import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.EmailUsedException;
-import io.github.platovd.alnet.exception.IdNotFoundException;
-import io.github.platovd.alnet.exception.UsernameNotFoundException;
-import io.github.platovd.alnet.exception.UsernameUsedException;
+import io.github.platovd.alnet.exception.*;
 import io.github.platovd.alnet.repository.UserRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository repository;
+    private final SecurityContextWrapper securityContextWrapper;
 
-    @Transactional
-    public void save(User user) {
+    protected void save(User user) {
         repository.save(user);
     }
 
@@ -41,13 +40,19 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public User getCurrentUser() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return getByUsername(username);
+    public User getById(Long id) {
+        return repository.findById(id).orElseThrow(() -> new IdNotFoundException(("Id wasn't found")));
     }
 
     @Transactional(readOnly = true)
-    public User getById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new IdNotFoundException(("Id wasn't found")));
+    public User getCurrentUser() {
+        if (!securityContextWrapper.isAuthenticated())
+            throw new UserServiceException("No authentication found. Current authentication is " +
+                    securityContextWrapper.getAuthentication());
+        Authentication authentication = securityContextWrapper.getAuthentication();
+        if (authentication instanceof JWTAuthToken jwtAuthToken) {
+            return getById(jwtAuthToken.getId());
+        }
+        return getByUsername(authentication.getName());
     }
 }

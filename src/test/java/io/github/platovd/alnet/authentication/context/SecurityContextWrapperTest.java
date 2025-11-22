@@ -28,7 +28,8 @@ public class SecurityContextWrapperTest {
     public void setUp() {
         testUser = FabricForTests.testUser();
         userDetails = AuthUtil.fromUserToUserDetails(testUser);
-        authentication = new JWTAuthToken(FabricForTests.JWT, userDetails, List.of(new SimpleGrantedAuthority(FabricForTests.ROLE)), true);
+        authentication = new JWTAuthToken(FabricForTests.JWT, userDetails,
+                List.of(new SimpleGrantedAuthority(FabricForTests.ROLE)), true, testUser.getId());
     }
 
     @Test

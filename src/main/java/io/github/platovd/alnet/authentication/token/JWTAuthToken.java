@@ -1,26 +1,22 @@
 package io.github.platovd.alnet.authentication.token;
 
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
+@AllArgsConstructor
 public class JWTAuthToken implements Authentication {
     private final String jwtToken;
     private UserDetails principal;
     private Collection<? extends GrantedAuthority> authorities;
     private boolean isAuthenticated = false;
+    private Long principalId;
 
     public JWTAuthToken(String jwtToken) {
         this.jwtToken = jwtToken;
-    }
-
-    public JWTAuthToken(String jwtToken, UserDetails principal, Collection<? extends GrantedAuthority> authorities, boolean isAuthenticated) {
-        this.jwtToken = jwtToken;
-        this.principal = principal;
-        this.authorities = authorities;
-        this.isAuthenticated = isAuthenticated;
     }
 
     @Override
@@ -57,6 +53,10 @@ public class JWTAuthToken implements Authentication {
     public String getName() {
         if (principal == null) return "";
         return principal.getUsername();
+    }
+
+    public Long getId() {
+        return principalId;
     }
 
     public String getToken() {
