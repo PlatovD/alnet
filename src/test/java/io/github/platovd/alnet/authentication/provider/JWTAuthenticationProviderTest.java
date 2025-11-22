@@ -1,11 +1,11 @@
 package io.github.platovd.alnet.authentication.provider;
 
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
-import io.github.platovd.alnet.entity.Role;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.UserServiceException;
 import io.github.platovd.alnet.service.JWTService;
 import io.github.platovd.alnet.service.UserService;
+import io.github.platovd.alnet.testutil.FabricForTests;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,18 +18,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class JWTAuthenticationProviderTest {
-    private final String JWT = "jwt";
-    private final Long USER_ID = 1L;
-    private final String USERNAME = "Test";
-    private final String ROLE = "USER";
     private User testUser;
     private JWTAuthToken jwtAuthToken;
 
@@ -45,17 +39,16 @@ public class JWTAuthenticationProviderTest {
 
     @BeforeEach
     public void setUp() {
-        jwtAuthToken = new JWTAuthToken(JWT);
-        testUser = User.builder().id(USER_ID).email("test@gmail.com").username(USERNAME).password("qwerty").role(
-                List.of(Role.builder().name(ROLE).build())).build();
+        jwtAuthToken = new JWTAuthToken(FabricForTests.JWT);
+        testUser = FabricForTests.testUser();
     }
 
     @Test
     public void validJWTTest() {
-        when(jwtService.extractId(JWT)).thenReturn(USER_ID);
-        when(userService.getById(USER_ID)).thenReturn(testUser);
-        when(jwtService.isTypeOf(JWT, "access")).thenReturn(true);
-        when(jwtService.isTokenValid(JWT, testUser)).thenReturn(true);
+        when(jwtService.extractId(FabricForTests.JWT)).thenReturn(FabricForTests.USER_ID);
+        when(userService.getById(FabricForTests.USER_ID)).thenReturn(testUser);
+        when(jwtService.isTypeOf(FabricForTests.JWT, "access")).thenReturn(true);
+        when(jwtService.isTokenValid(FabricForTests.JWT, testUser)).thenReturn(true);
 
         Authentication res = authenticationProvider.authenticate(jwtAuthToken);
 
@@ -63,12 +56,12 @@ public class JWTAuthenticationProviderTest {
         assertThat(res.getName()).isEqualTo(testUser.getUsername());
         assertThat(res.getAuthorities())
                 .extracting(GrantedAuthority::getAuthority)
-                .contains("ROLE_USER");
+                .contains("ROLE_" + FabricForTests.ROLE);
     }
 
     @Test
     public void invalidJWTKeyTest() {
-        when(jwtService.extractId(JWT)).thenThrow(JwtException.class);
+        when(jwtService.extractId(FabricForTests.JWT)).thenThrow(JwtException.class);
         assertThatThrownBy(() -> authenticationProvider.authenticate(jwtAuthToken))
                 .isInstanceOf(AuthenticationException.class);
         assertThat(jwtAuthToken.isAuthenticated()).isFalse();
@@ -76,8 +69,8 @@ public class JWTAuthenticationProviderTest {
 
     @Test
     public void invalidJWTUserTest() {
-        when(jwtService.extractId(JWT)).thenReturn(USER_ID);
-        when(userService.getById(USER_ID)).thenThrow(UserServiceException.class);
+        when(jwtService.extractId(FabricForTests.JWT)).thenReturn(FabricForTests.USER_ID);
+        when(userService.getById(FabricForTests.USER_ID)).thenThrow(UserServiceException.class);
         assertThatThrownBy(() -> authenticationProvider.authenticate(jwtAuthToken))
                 .isInstanceOf(AuthenticationException.class);
         assertThat(jwtAuthToken.isAuthenticated()).isFalse();
@@ -85,10 +78,10 @@ public class JWTAuthenticationProviderTest {
 
     @Test
     public void expiredJWTTest() {
-        when(jwtService.extractId(JWT)).thenReturn(USER_ID);
-        when(userService.getById(USER_ID)).thenReturn(testUser);
-        when(jwtService.isTypeOf(JWT, "access")).thenReturn(true);
-        when(jwtService.isTokenValid(JWT, testUser)).thenThrow(ExpiredJwtException.class);
+        when(jwtService.extractId(FabricForTests.JWT)).thenReturn(FabricForTests.USER_ID);
+        when(userService.getById(FabricForTests.USER_ID)).thenReturn(testUser);
+        when(jwtService.isTypeOf(FabricForTests.JWT, "access")).thenReturn(true);
+        when(jwtService.isTokenValid(FabricForTests.JWT, testUser)).thenThrow(ExpiredJwtException.class);
 
         assertThatThrownBy(() -> authenticationProvider.authenticate(jwtAuthToken))
                 .isInstanceOf(AuthenticationException.class);

@@ -5,6 +5,7 @@ import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.entrypoint.JWTEntrypointUnauthenticated;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.exception.InvalidAccessTokenException;
+import io.github.platovd.alnet.testutil.FabricForTests;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,10 +33,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class JWTAuthenticationFilterTest {
     private final String HEADER_NAME = "Authorization";
-    private final String JWT = "jwt";
-    private final String HEADER_VALUE_VALID = "Bearer " + JWT;
+    private final String HEADER_VALUE_VALID = "Bearer " + FabricForTests.JWT;
     private final String HEADER_VALUE_INVALID = "Bearer ";
-    private final String ANONYMOUS_KEY = "KEY";
     private final String HEADER_VALUE_NO_BEARER = "Basic dXNlcjpwYXNzd29yZA==";
 
     @Mock
@@ -87,11 +86,11 @@ public class JWTAuthenticationFilterTest {
         doNothing().when(jwtAuthenticationFilter).doFilter(request, response, filterChain);
         when(request.getHeader(HEADER_NAME)).thenReturn(HEADER_VALUE_VALID);
         when(authenticationManager.authenticate(any(Authentication.class))).then(invocation -> {
-            JWTAuthToken jwt = new JWTAuthToken(JWT);
+            JWTAuthToken jwt = new JWTAuthToken(FabricForTests.JWT);
             jwt.setAuthenticated(true);
             return jwt;
         });
-        securityContextWrapper.setAnonymousAuthKey(ANONYMOUS_KEY);
+        securityContextWrapper.setAnonymousAuthKey(FabricForTests.ANONYMOUS_KEY);
         securityContextWrapper.setAuthentication(anonymousAuthenticationToken);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -102,7 +101,7 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void doFilterInternalAlreadyAuthenticatedTest() {
         doNothing().when(jwtAuthenticationFilter).doFilter(request, response, filterChain);
-        securityContextWrapper.setAnonymousAuthKey(ANONYMOUS_KEY);
+        securityContextWrapper.setAnonymousAuthKey(FabricForTests.ANONYMOUS_KEY);
         when(request.getHeader(HEADER_NAME)).thenReturn(HEADER_VALUE_VALID);
         when(jwtAuthenticationToken.isAuthenticated()).thenReturn(true);
         securityContextWrapper.setAuthentication(jwtAuthenticationToken);
@@ -115,7 +114,7 @@ public class JWTAuthenticationFilterTest {
     @SneakyThrows
     public void doFilterInternalNoBearerInHeaderTest() {
         doNothing().when(jwtAuthenticationFilter).doFilter(request, response, filterChain);
-        securityContextWrapper.setAnonymousAuthKey(ANONYMOUS_KEY);
+        securityContextWrapper.setAnonymousAuthKey(FabricForTests.ANONYMOUS_KEY);
         when(request.getHeader(HEADER_NAME)).thenReturn(HEADER_VALUE_NO_BEARER);
         securityContextWrapper.setAuthentication(jwtAuthenticationToken);
 
@@ -126,7 +125,7 @@ public class JWTAuthenticationFilterTest {
     @SneakyThrows
     @Test
     public void doFilterInternalIncorrectTokenTest() {
-        securityContextWrapper.setAnonymousAuthKey(ANONYMOUS_KEY);
+        securityContextWrapper.setAnonymousAuthKey(FabricForTests.ANONYMOUS_KEY);
         when(request.getHeader(HEADER_NAME)).thenReturn(HEADER_VALUE_VALID);
         securityContextWrapper.setAuthentication(anonymousAuthenticationToken);
         when(accessTokenException.getMessage()).thenReturn("Error message");
@@ -150,7 +149,7 @@ public class JWTAuthenticationFilterTest {
     @Test
     @SneakyThrows
     public void doFilterInternalEmptyTokenTest() {
-        securityContextWrapper.setAnonymousAuthKey(ANONYMOUS_KEY);
+        securityContextWrapper.setAnonymousAuthKey(FabricForTests.ANONYMOUS_KEY);
         when(request.getHeader(HEADER_NAME)).thenReturn(HEADER_VALUE_INVALID);
         securityContextWrapper.setAuthentication(anonymousAuthenticationToken);
         doNothing().when(response).setStatus(any(Integer.class));

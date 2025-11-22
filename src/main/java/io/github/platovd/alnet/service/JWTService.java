@@ -1,12 +1,13 @@
 package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.entity.User;
+import io.github.platovd.alnet.exception.UnknownTokenTypeException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Сервис для работы с jwt токенами (access + refresh). Умеет выпускать их, проверять их и извлекать из них данные.
+ */
 @Service
+@Setter
 public class JWTService {
     @Value("${auth.jwt.singing.key}")
     private String key;
@@ -39,13 +44,17 @@ public class JWTService {
         try {
             return extractAllClaims(token).get("type", String.class);
         } catch (IllegalArgumentException | JwtException e) {
-            throw new IllegalArgumentException("Unknown token type error. " + e);
+            throw new UnknownTokenTypeException("Unknown token type exception. " + e);
         }
     }
 
-    public boolean isTokenValid(String token, User user) throws JwtException {
-        final String username = extractUserName(token);
-        return (username.equals(user.getUsername()) && !isTokenExpired(token));
+    public boolean isTokenValid(String token, User user) {
+        try {
+            final String username = extractUserName(token);
+            return (username.equals(user.getUsername()) && !isTokenExpired(token));
+        } catch (JwtException e) {
+            return false;
+        }
     }
 
     public String generateJWT(User user) {
@@ -87,8 +96,12 @@ public class JWTService {
                 .header().add("typ", "JWT").and()
                 .id(user.getId().toString()).subject(user.getUsername()).claims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * expirationDurationSeconds))
+                .expiration(new Date(System.currentTimeMillis() + expirationToMillis(expirationDurationSeconds)))
                 .signWith(getSigningKey(key)).compact();
+    }
+
+    private Long expirationToMillis(Long expirationDurationSeconds) {
+        return expirationDurationSeconds * 1000;
     }
 
     public boolean isTypeOf(String token, String type) {
