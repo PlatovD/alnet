@@ -4,24 +4,16 @@ import io.github.platovd.alnet.entity.Role;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.testutil.FabricForTests;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JWTServiceTest {
-    private final String key = "2cb238a48eb4276cd65622ccc501d640bb01b5114a7452e4599394843a47fe77";
-    private final Long accessTokenExpirationDuration = 2L;
-    private final Long refreshTokenExpirationDuration = 2L;
-    private final Long noExpiration = 1000L;
+
     private JWTService jwtService;
     private User testUser;
 
@@ -40,45 +32,21 @@ public class JWTServiceTest {
                 FabricForTests.USER_ID, FabricForTests.USERNAME, FabricForTests.PASSWORD, "test@gmail.com", List.of(new Role(FabricForTests.ROLE, List.of())),
                 null);
         jwtService = new JWTService();
-        jwtService.setKey(key);
-        jwtService.setAccessTokenExpirationDuration(accessTokenExpirationDuration);
-        jwtService.setRefreshTokenExpirationDuration(refreshTokenExpirationDuration);
+        jwtService.setKey(FabricForTests.key);
+        jwtService.setAccessTokenExpirationDuration(FabricForTests.accessTokenExpirationDuration);
+        jwtService.setRefreshTokenExpirationDuration(FabricForTests.refreshTokenExpirationDuration);
 
-        correctNotExpiredAccessJwt = Jwts.builder().header().add("typ", "JWT").and()
-                .id(String.valueOf(FabricForTests.USER_ID)).subject(testUser.getUsername()).claims(Map.of("type", "access"))
-                .issuedAt(new Date(System.currentTimeMillis())).expiration(new Date(System.currentTimeMillis() +
-                        accessTokenExpirationDuration * noExpiration))
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(key))).compact();
+        correctNotExpiredAccessJwt = FabricForTests.correctNoExpiredAccessJwt();
 
-        correctNotExpiredRefreshJwt = Jwts.builder().header().add("typ", "JWT").and()
-                .id(String.valueOf(FabricForTests.USER_ID)).subject(testUser.getUsername()).claims(Map.of("type", "refresh"))
-                .issuedAt(new Date(System.currentTimeMillis())).expiration(new Date(System.currentTimeMillis() +
-                        refreshTokenExpirationDuration * noExpiration))
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(key))).compact();
+        correctNotExpiredRefreshJwt = FabricForTests.correctNoExpiredRefreshJwt();
 
-        incorrectNotExpiredAccessJwt = Jwts.builder().header().add("typ", "JWT").and()
-                .id(String.valueOf(FabricForTests.USER_ID)).subject(testUser.getUsername()).claims(Map.of("type", "access"))
-                .issuedAt(new Date(System.currentTimeMillis())).expiration(new Date(System.currentTimeMillis() +
-                        accessTokenExpirationDuration * noExpiration))
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(key + "error"))).compact();
+        incorrectNotExpiredAccessJwt = FabricForTests.incorrectNotExpiredAccessJwt();
 
-        incorrectNotExpiredRefreshJwt = Jwts.builder().header().add("typ", "JWT").and()
-                .id(String.valueOf(FabricForTests.USER_ID)).subject(testUser.getUsername()).claims(Map.of("type", "refresh"))
-                .issuedAt(new Date(System.currentTimeMillis())).expiration(new Date(System.currentTimeMillis() +
-                        refreshTokenExpirationDuration * noExpiration))
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(key + "error"))).compact();
+        incorrectNotExpiredRefreshJwt = FabricForTests.incorrectNotExpiredRefreshJwt();
 
-        expiredAccessJwt = Jwts.builder().header().add("typ", "JWT").and()
-                .id(String.valueOf(FabricForTests.USER_ID)).subject(testUser.getUsername()).claims(Map.of("type", "access"))
-                .issuedAt(new Date(System.currentTimeMillis())).expiration(new Date(System.currentTimeMillis() +
-                        accessTokenExpirationDuration * (-noExpiration)))
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(key))).compact();
+        expiredAccessJwt = FabricForTests.expiredAccessJwt();
 
-        expiredRefreshJwt = Jwts.builder().header().add("typ", "JWT").and()
-                .id(String.valueOf(FabricForTests.USER_ID)).subject(testUser.getUsername()).claims(Map.of("type", "refresh"))
-                .issuedAt(new Date(System.currentTimeMillis())).expiration(new Date(System.currentTimeMillis() +
-                        refreshTokenExpirationDuration * (-noExpiration)))
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(key))).compact();
+        expiredRefreshJwt = FabricForTests.expiredRefreshJwt();
     }
 
     @Test

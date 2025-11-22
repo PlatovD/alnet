@@ -57,16 +57,16 @@ public class JWTService {
         }
     }
 
-    public String generateJWT(User user) {
+    public String generateJWTAccess(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "access");
-        return generateJWT(claims, user, accessTokenExpirationDuration);
+        return generateJWTAccess(claims, user, accessTokenExpirationDuration);
     }
 
     public String generateJWTRefresh(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "refresh");
-        return generateJWT(claims, user, refreshTokenExpirationDuration);
+        return generateJWTAccess(claims, user, refreshTokenExpirationDuration);
     }
 
     private boolean isTokenExpired(String token) {
@@ -91,7 +91,7 @@ public class JWTService {
         return Keys.hmacShaKeyFor(keyBites);
     }
 
-    private String generateJWT(Map<String, Object> claims, User user, Long expirationDurationSeconds) {
+    private String generateJWTAccess(Map<String, Object> claims, User user, Long expirationDurationSeconds) {
         return Jwts.builder()
                 .header().add("typ", "JWT").and()
                 .id(user.getId().toString()).subject(user.getUsername()).claims(claims)
