@@ -37,9 +37,10 @@ public class SecurityConfig {
 
     @Bean
     public JWTAuthenticationFilter jwtAuthenticationFilter(AuthenticationManager authenticationManager, AuthenticationEntryPoint entryPoint) throws Exception {
-        JWTAuthenticationFilter filter = new JWTAuthenticationFilter(securityContextWrapper, entryPoint);
-        filter.setAuthManager(authenticationManager);
-        return filter;
+        return JWTAuthenticationFilter.builder()
+                .authManager(authenticationManager)
+                .authenticationEntryPoint(entryPoint)
+                .authManager(authenticationManager).build();
     }
 
     @Bean

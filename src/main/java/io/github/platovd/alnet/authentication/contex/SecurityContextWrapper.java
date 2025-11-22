@@ -61,12 +61,17 @@ public class SecurityContextWrapper {
 
     public void unAuthenticate() {
         SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(
-                new AnonymousAuthenticationToken(
-                        anonymousAuthKey,
-                        "anonymousUser",
-                        List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")))
-        );
+        try {
+            context.setAuthentication(
+                    new AnonymousAuthenticationToken(
+                            anonymousAuthKey,
+                            "anonymousUser",
+                            List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")))
+            );
+        } catch (IllegalArgumentException e) {
+            anonymousAuthKey = "Error key";
+        }
+
     }
 
     public Authentication getAuthentication() {

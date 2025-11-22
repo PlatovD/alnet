@@ -21,7 +21,7 @@ public class CustomUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findUserByUsername(username);
         if (user.isEmpty())
-            throw new UsernameNotFoundException("User " + username + " not wound in database");
+            throw new UsernameNotFoundException("User " + username + " not found in database");
         return AuthUtil.fromUserToUserDetails(user.get());
     }
 }

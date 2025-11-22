@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * Класс, который отвечает за обработку ошибок JWT аутентификации. Если процесс аутентификации использовал JWT и
+ * прошел неудачно, то этот класс обрабатывает ошибку и формирует соответсвующий ответ сервера
+ */
 @Component
 @RequiredArgsConstructor
 public class JWTEntrypointUnauthenticated implements AuthenticationEntryPoint {
