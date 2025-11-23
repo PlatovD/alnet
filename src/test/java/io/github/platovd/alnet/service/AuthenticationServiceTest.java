@@ -1,6 +1,7 @@
 package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.dto.request.RefreshRequest;
 import io.github.platovd.alnet.dto.request.SignInRequest;
 import io.github.platovd.alnet.dto.request.SignUpRequest;
@@ -32,6 +33,9 @@ public class AuthenticationServiceTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private JWTAuthToken jwtAuthToken;
 
     @Mock
     private SecurityContextWrapper securityContextWrapper;
@@ -107,5 +111,21 @@ public class AuthenticationServiceTest {
         when(jwtService.isTokenValid(any(String.class), eq(testUser))).thenReturn(true);
 
         assertThat(authenticationService.refresh(refreshRequest)).isInstanceOf(JWTAuthenticationResponse.class);
+    }
+
+    @Test
+    public void getCurrentUserAuthenticatedTest() {
+        when(securityContextWrapper.isAuthenticated()).thenReturn(true);
+        when(securityContextWrapper.getAuthentication()).thenReturn(jwtAuthToken);
+        when(jwtAuthToken.getId()).thenReturn(testUser.getId());
+        when(userService.getById(testUser.getId())).thenReturn(testUser);
+
+        assertThat(authenticationService.getCurrentUser()).isEqualTo(testUser);
+    }
+
+    @Test
+    public void getCurrentUserUnauthenticatedTest() {
+        when(securityContextWrapper.isAuthenticated()).thenReturn(false);
+        assertThatThrownBy(() -> authenticationService.getCurrentUser()).isInstanceOf(UserServiceException.class);
     }
 }

@@ -1,6 +1,7 @@
 package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.dto.response.JWTAuthenticationResponse;
 import io.github.platovd.alnet.dto.request.RefreshRequest;
 import io.github.platovd.alnet.dto.request.SignInRequest;
@@ -8,6 +9,8 @@ import io.github.platovd.alnet.dto.request.SignUpRequest;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.AlreadyAuthenticatedException;
 import io.github.platovd.alnet.exception.InvalidRefreshTokenException;
+import io.github.platovd.alnet.exception.UserServiceException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
+    private final AuthenticationService self;
     private final UserService userService;
     private final JWTService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -64,5 +68,21 @@ public class AuthenticationService {
         if (!jwtService.isTokenValid(token, user))
             throw new InvalidRefreshTokenException("Given refresh token isn't valid");
         return new JWTAuthenticationResponse(jwtService.generateJWTAccess(user), jwtService.generateJWTRefresh(user));
+    }
+
+    @Transactional(readOnly = true)
+    public User getCurrentUser() {
+        if (!securityContextWrapper.isAuthenticated())
+            throw new UserServiceException("No authentication found. Current authentication is " +
+                    securityContextWrapper.getAuthentication());
+        Authentication authentication = securityContextWrapper.getAuthentication();
+        if (authentication instanceof JWTAuthToken jwtAuthToken) {
+            return userService.getById(jwtAuthToken.getId());
+        }
+        return userService.getByUsername(authentication.getName());
+    }
+
+    public boolean isCurrentUser(User user) {
+        return self.getCurrentUser().getId().equals(user.getId());
     }
 }

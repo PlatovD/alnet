@@ -91,20 +91,4 @@ public class UserServiceTest {
         when(userRepository.findById(testUser.getId())).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.getById(testUser.getId())).isInstanceOf(UserServiceException.class);
     }
-
-    @Test
-    public void getCurrentUserAuthenticatedTest() {
-        when(securityContextWrapper.isAuthenticated()).thenReturn(true);
-        when(securityContextWrapper.getAuthentication()).thenReturn(jwtAuthToken);
-        when(jwtAuthToken.getId()).thenReturn(testUser.getId());
-        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
-
-        assertThat(userService.getCurrentUser()).isEqualTo(testUser);
-    }
-
-    @Test
-    public void getCurrentUserUnauthenticatedTest() {
-        when(securityContextWrapper.isAuthenticated()).thenReturn(false);
-        assertThatThrownBy(() -> userService.getCurrentUser()).isInstanceOf(UserServiceException.class);
-    }
 }
