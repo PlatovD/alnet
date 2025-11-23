@@ -42,6 +42,8 @@ public class AuthenticationServiceTest {
 
     private User testUser;
 
+    private User anotherUser;
+
     @Mock
     private JWTService jwtService;
 
@@ -60,6 +62,8 @@ public class AuthenticationServiceTest {
         signInRequest = FabricForTests.signInRequest();
         refreshRequest = FabricForTests.refreshRequest();
         testUser = FabricForTests.testUser();
+        anotherUser = FabricForTests.testUser();
+        anotherUser.setId(2L);
     }
 
     @Test
@@ -127,5 +131,25 @@ public class AuthenticationServiceTest {
     public void getCurrentUserUnauthenticatedTest() {
         when(securityContextWrapper.isAuthenticated()).thenReturn(false);
         assertThatThrownBy(() -> authenticationService.getCurrentUser()).isInstanceOf(UserServiceException.class);
+    }
+
+    @Test
+    public void isCurrentUserSuccessTest() {
+        when(securityContextWrapper.isAuthenticated()).thenReturn(true);
+        when(securityContextWrapper.getAuthentication()).thenReturn(jwtAuthToken);
+        when(jwtAuthToken.getId()).thenReturn(testUser.getId());
+        when(userService.getById(testUser.getId())).thenReturn(testUser);
+
+        assertThat(authenticationService.isCurrentUser(testUser)).isTrue();
+    }
+
+    @Test
+    public void isCurrentUserUnsuccessTest() {
+        when(securityContextWrapper.isAuthenticated()).thenReturn(true);
+        when(securityContextWrapper.getAuthentication()).thenReturn(jwtAuthToken);
+        when(jwtAuthToken.getId()).thenReturn(testUser.getId());
+        when(userService.getById(testUser.getId())).thenReturn(testUser);
+
+        assertThat(authenticationService.isCurrentUser(anotherUser)).isFalse();
     }
 }

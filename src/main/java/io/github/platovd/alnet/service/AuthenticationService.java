@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-    private final AuthenticationService self;
     private final UserService userService;
     private final JWTService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -82,7 +81,8 @@ public class AuthenticationService {
         return userService.getByUsername(authentication.getName());
     }
 
+    @Transactional(readOnly = true)
     public boolean isCurrentUser(User user) {
-        return self.getCurrentUser().getId().equals(user.getId());
+        return getCurrentUser().getId().equals(user.getId());
     }
 }
