@@ -1,8 +1,8 @@
 package io.github.platovd.alnet.testutil;
 
-import io.github.platovd.alnet.dto.request.RefreshRequest;
-import io.github.platovd.alnet.dto.request.SignInRequest;
-import io.github.platovd.alnet.dto.request.SignUpRequest;
+import io.github.platovd.alnet.dto.authentication.request.RefreshRequest;
+import io.github.platovd.alnet.dto.authentication.request.SignInRequest;
+import io.github.platovd.alnet.dto.authentication.request.SignUpRequest;
 import io.github.platovd.alnet.entity.Role;
 import io.github.platovd.alnet.entity.User;
 import io.jsonwebtoken.Jwts;
@@ -27,7 +27,7 @@ public class FabricForTests {
     public static final Long noExpiration = 1000L;
 
     public static User testUser() {
-        return User.builder().id(USER_ID).email(EMAIL).username(USERNAME).password(PASSWORD).role(
+        return User.builder().userId(USER_ID).email(EMAIL).username(USERNAME).password(PASSWORD).role(
                 List.of(Role.builder().name(ROLE).build())).build();
     }
 

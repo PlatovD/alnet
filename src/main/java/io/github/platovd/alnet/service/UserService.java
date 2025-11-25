@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository repository;
-    private final SecurityContextWrapper securityContextWrapper;
 
     protected void save(User user) {
         repository.save(user);

@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.dto.response;
+package io.github.platovd.alnet.dto.authentication.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

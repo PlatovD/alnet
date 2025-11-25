@@ -2,10 +2,11 @@ package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
-import io.github.platovd.alnet.dto.response.JWTAuthenticationResponse;
-import io.github.platovd.alnet.dto.request.RefreshRequest;
-import io.github.platovd.alnet.dto.request.SignInRequest;
-import io.github.platovd.alnet.dto.request.SignUpRequest;
+
+import io.github.platovd.alnet.dto.authentication.request.RefreshRequest;
+import io.github.platovd.alnet.dto.authentication.request.SignInRequest;
+import io.github.platovd.alnet.dto.authentication.request.SignUpRequest;
+import io.github.platovd.alnet.dto.authentication.response.JWTAuthenticationResponse;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.AlreadyAuthenticatedException;
 import io.github.platovd.alnet.exception.InvalidRefreshTokenException;
@@ -83,6 +84,19 @@ public class AuthenticationService {
 
     @Transactional(readOnly = true)
     public boolean isCurrentUser(User user) {
-        return getCurrentUser().getId().equals(user.getId());
+        return getCurrentUser().getUserId().equals(user.getUserId());
+    }
+
+    /**
+     * Создан для того, чтобы не делать лишние запросы к бд
+     *
+     * @return String username
+     * @throws UserServiceException no auth exception
+     */
+    public String getCurrentUserName() {
+        if (!securityContextWrapper.isAuthenticated())
+            throw new UserServiceException("No authentication found. Current authentication is " +
+                    securityContextWrapper.getAuthentication());
+        return securityContextWrapper.getAuthenticatedUserInfo(UserDetails::getUsername);
     }
 }

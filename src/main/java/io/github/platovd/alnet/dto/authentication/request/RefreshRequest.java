@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.dto.request;
+package io.github.platovd.alnet.dto.authentication.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;

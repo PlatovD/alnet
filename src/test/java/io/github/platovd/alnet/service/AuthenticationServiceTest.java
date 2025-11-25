@@ -2,10 +2,10 @@ package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
-import io.github.platovd.alnet.dto.request.RefreshRequest;
-import io.github.platovd.alnet.dto.request.SignInRequest;
-import io.github.platovd.alnet.dto.request.SignUpRequest;
-import io.github.platovd.alnet.dto.response.JWTAuthenticationResponse;
+import io.github.platovd.alnet.dto.authentication.request.RefreshRequest;
+import io.github.platovd.alnet.dto.authentication.request.SignInRequest;
+import io.github.platovd.alnet.dto.authentication.request.SignUpRequest;
+import io.github.platovd.alnet.dto.authentication.response.JWTAuthenticationResponse;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.UnknownAuthenticationException;
 import io.github.platovd.alnet.exception.UserServiceException;
@@ -63,7 +63,7 @@ public class AuthenticationServiceTest {
         refreshRequest = FabricForTests.refreshRequest();
         testUser = FabricForTests.testUser();
         anotherUser = FabricForTests.testUser();
-        anotherUser.setId(2L);
+        anotherUser.setUserId(2L);
     }
 
     @Test
@@ -121,8 +121,8 @@ public class AuthenticationServiceTest {
     public void getCurrentUserAuthenticatedTest() {
         when(securityContextWrapper.isAuthenticated()).thenReturn(true);
         when(securityContextWrapper.getAuthentication()).thenReturn(jwtAuthToken);
-        when(jwtAuthToken.getId()).thenReturn(testUser.getId());
-        when(userService.getById(testUser.getId())).thenReturn(testUser);
+        when(jwtAuthToken.getId()).thenReturn(testUser.getUserId());
+        when(userService.getById(testUser.getUserId())).thenReturn(testUser);
 
         assertThat(authenticationService.getCurrentUser()).isEqualTo(testUser);
     }
@@ -137,8 +137,8 @@ public class AuthenticationServiceTest {
     public void isCurrentUserSuccessTest() {
         when(securityContextWrapper.isAuthenticated()).thenReturn(true);
         when(securityContextWrapper.getAuthentication()).thenReturn(jwtAuthToken);
-        when(jwtAuthToken.getId()).thenReturn(testUser.getId());
-        when(userService.getById(testUser.getId())).thenReturn(testUser);
+        when(jwtAuthToken.getId()).thenReturn(testUser.getUserId());
+        when(userService.getById(testUser.getUserId())).thenReturn(testUser);
 
         assertThat(authenticationService.isCurrentUser(testUser)).isTrue();
     }
@@ -147,8 +147,8 @@ public class AuthenticationServiceTest {
     public void isCurrentUserUnsuccessTest() {
         when(securityContextWrapper.isAuthenticated()).thenReturn(true);
         when(securityContextWrapper.getAuthentication()).thenReturn(jwtAuthToken);
-        when(jwtAuthToken.getId()).thenReturn(testUser.getId());
-        when(userService.getById(testUser.getId())).thenReturn(testUser);
+        when(jwtAuthToken.getId()).thenReturn(testUser.getUserId());
+        when(userService.getById(testUser.getUserId())).thenReturn(testUser);
 
         assertThat(authenticationService.isCurrentUser(anotherUser)).isFalse();
     }

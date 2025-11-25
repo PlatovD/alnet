@@ -1,9 +1,9 @@
 package io.github.platovd.alnet.controller;
 
-import io.github.platovd.alnet.dto.response.JWTAuthenticationResponse;
-import io.github.platovd.alnet.dto.request.RefreshRequest;
-import io.github.platovd.alnet.dto.request.SignInRequest;
-import io.github.platovd.alnet.dto.request.SignUpRequest;
+import io.github.platovd.alnet.dto.authentication.response.JWTAuthenticationResponse;
+import io.github.platovd.alnet.dto.authentication.request.RefreshRequest;
+import io.github.platovd.alnet.dto.authentication.request.SignInRequest;
+import io.github.platovd.alnet.dto.authentication.request.SignUpRequest;
 import io.github.platovd.alnet.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация")
-public class AuthController {
+public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @Operation(summary = "Регистрация пользователя")

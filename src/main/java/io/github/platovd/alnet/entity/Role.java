@@ -6,17 +6,17 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name = "role")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
+@Table(name = "role")
 public class Role {
     @Id
     @Column(name = "role_name", nullable = false, unique = true)
     private String name;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "role")
     private List<User> usersWithRole;
 }

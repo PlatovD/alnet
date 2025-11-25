@@ -82,13 +82,13 @@ public class UserServiceTest {
 
     @Test
     public void getByIdExistsTest() {
-        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
-        assertThat(userService.getById(testUser.getId())).isEqualTo(testUser);
+        when(userRepository.findById(testUser.getUserId())).thenReturn(Optional.of(testUser));
+        assertThat(userService.getById(testUser.getUserId())).isEqualTo(testUser);
     }
 
     @Test
     public void getByIdNotExistsTest() {
-        when(userRepository.findById(testUser.getId())).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> userService.getById(testUser.getId())).isInstanceOf(UserServiceException.class);
+        when(userRepository.findById(testUser.getUserId())).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> userService.getById(testUser.getUserId())).isInstanceOf(UserServiceException.class);
     }
 }

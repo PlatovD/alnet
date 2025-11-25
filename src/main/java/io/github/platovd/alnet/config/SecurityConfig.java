@@ -40,7 +40,9 @@ public class SecurityConfig {
         return JWTAuthenticationFilter.builder()
                 .authManager(authenticationManager)
                 .authenticationEntryPoint(entryPoint)
-                .authManager(authenticationManager).build();
+                .authManager(authenticationManager)
+                .securityContextWrapper(securityContextWrapper)
+                .build();
     }
 
     @Bean

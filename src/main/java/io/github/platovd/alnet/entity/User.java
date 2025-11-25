@@ -16,7 +16,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false, unique = true)
-    private Long id;
+    private Long userId;
 
     @Column(name = "username", unique = true, nullable = false)
     private String username;
@@ -36,5 +36,5 @@ public class User {
     private List<Role> role;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<RefreshToken> refreshTokens;
+    private List<UserChat> userChat;
 }
