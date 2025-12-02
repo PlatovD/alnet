@@ -18,5 +18,5 @@ public class ChatMembersResponse {
     private Long chatId;
 
     @Schema(name = "Участники чата")
-    private List<String> members;
+    private List<ChatMemberDTO> members;
 }

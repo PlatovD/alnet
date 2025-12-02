@@ -6,15 +6,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "Запрос на добавление пользователя в чат")
-public class UserAddRequest {
+@Schema(name = "Запрос на операцию с пользователем чата")
+public class UserChatOperationRequest {
     @Schema(name = "Идентификатор чата")
     private Long chatId;
 
     @Schema(name = "Имя пользователя")
-    private String username;
+    private List<String> usernames;
 }
