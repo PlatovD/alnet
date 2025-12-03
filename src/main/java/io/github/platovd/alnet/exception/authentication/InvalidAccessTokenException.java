@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.exception;
+package io.github.platovd.alnet.exception.authentication;
 
 import org.springframework.security.core.AuthenticationException;
 

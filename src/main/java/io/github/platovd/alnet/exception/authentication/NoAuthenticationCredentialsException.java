@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.exception;
+package io.github.platovd.alnet.exception.authentication;
 
 public class NoAuthenticationCredentialsException extends RuntimeException {
     public NoAuthenticationCredentialsException(String message) {

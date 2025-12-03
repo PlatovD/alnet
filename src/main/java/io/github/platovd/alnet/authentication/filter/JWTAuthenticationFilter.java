@@ -2,7 +2,7 @@ package io.github.platovd.alnet.authentication.filter;
 
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
-import io.github.platovd.alnet.exception.InvalidAccessTokenException;
+import io.github.platovd.alnet.exception.authentication.InvalidAccessTokenException;
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,13 +10,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;

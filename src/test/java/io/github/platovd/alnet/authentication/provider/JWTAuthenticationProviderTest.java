@@ -2,7 +2,7 @@ package io.github.platovd.alnet.authentication.provider;
 
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.UserServiceException;
+import io.github.platovd.alnet.exception.user.UserServiceException;
 import io.github.platovd.alnet.service.JWTService;
 import io.github.platovd.alnet.service.UserService;
 import io.github.platovd.alnet.testutil.FabricForTests;

@@ -1,7 +1,7 @@
 package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.UnknownTokenTypeException;
+import io.github.platovd.alnet.exception.authentication.UnknownTokenTypeException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

@@ -8,9 +8,9 @@ import io.github.platovd.alnet.dto.authentication.request.SignInRequest;
 import io.github.platovd.alnet.dto.authentication.request.SignUpRequest;
 import io.github.platovd.alnet.dto.authentication.response.JWTAuthenticationResponse;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.AlreadyAuthenticatedException;
-import io.github.platovd.alnet.exception.InvalidRefreshTokenException;
-import io.github.platovd.alnet.exception.UserServiceException;
+import io.github.platovd.alnet.exception.authentication.AlreadyAuthenticatedException;
+import io.github.platovd.alnet.exception.authentication.InvalidRefreshTokenException;
+import io.github.platovd.alnet.exception.user.UserServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,7 +32,7 @@ public class AuthenticationService {
 
     @Transactional
     public JWTAuthenticationResponse signUp(SignUpRequest signUpRequest) {
-        User user = User.builder().username(signUpRequest.getName())
+        User user = User.builder().username(signUpRequest.getUsername() )
                 .email(signUpRequest.getEmail())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
                 .build();
@@ -85,6 +85,10 @@ public class AuthenticationService {
     @Transactional(readOnly = true)
     public boolean isCurrentUser(User user) {
         return getCurrentUser().getUserId().equals(user.getUserId());
+    }
+
+    public void unAuthenticate() {
+        securityContextWrapper.unAuthenticate();
     }
 
     /**

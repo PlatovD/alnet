@@ -14,7 +14,7 @@ public class SignUpRequest {
     @Schema(description = "Имя пользователя", example = "Dima")
     @Size(min = 3, max = 50, message = "Имя пользователя должно содержать от 3 до 50 символов")
     @NotBlank(message = "Име пользователя не может быть пустым")
-    private String name;
+    private String username;
 
     @Schema(description = "Email", example = "dima@gmail.com")
     @Size(min = 5, max = 100, message = "Email должен содержать от 5 до 100 символов")

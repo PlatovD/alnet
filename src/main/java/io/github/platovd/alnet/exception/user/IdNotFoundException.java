@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.exception;
+package io.github.platovd.alnet.exception.user;
 
 public class IdNotFoundException extends UserServiceException {
     public IdNotFoundException(String message) {

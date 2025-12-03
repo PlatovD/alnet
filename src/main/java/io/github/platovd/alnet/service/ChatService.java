@@ -2,7 +2,7 @@ package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.dto.chat.request.ChatCreationOrUpdateRequest;
 import io.github.platovd.alnet.entity.Chat;
-import io.github.platovd.alnet.exception.ChatNotFoundException;
+import io.github.platovd.alnet.exception.chat.ChatNotFoundException;
 import io.github.platovd.alnet.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,12 @@
 package io.github.platovd.alnet.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.*;
+import io.github.platovd.alnet.exception.user.*;
 import io.github.platovd.alnet.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +21,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository repository;
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     protected void save(User user) {
         repository.save(user);
@@ -54,11 +61,41 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public User getById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new IdNotFoundException(("Id wasn't found")));
+    public User getById(Long userId) {
+        return repository.findById(userId).orElseThrow(() -> new IdNotFoundException(("Id wasn't found")));
     }
 
-    public void deleteUserById() {
+    @Transactional
+    public User updateFullUser(Long userId, String username, String email) {
+        User user = getById(userId);
+        user.setUsername(username);
+        user.setEmail(email);
+        return userRepository.save(user);
+    }
 
+    @Transactional
+    public User applyPatchToUser(JsonPatch patch, User targetUser) throws JsonPatchException, JsonProcessingException {
+        JsonNode patched = patch.apply(objectMapper.convertValue(targetUser, JsonNode.class));
+        User patchedUser = objectMapper.treeToValue(patched, User.class);
+
+        if (patchedUser == null)
+            throw new IllegalArgumentException("Wrong patch request");
+
+        patchedUser.setUserId(targetUser.getUserId());
+        patchedUser.setPassword(targetUser.getPassword());
+
+        if (!patchedUser.getUsername().equals(targetUser.getUsername()))
+            if (userRepository.existsByUsername(patchedUser.getUsername()))
+                throw new UsernameUsedException("Username is already in use");
+        if (!patchedUser.getEmail().equals(targetUser.getEmail())) {
+            if (userRepository.existsByEmail(patchedUser.getEmail()))
+                throw new EmailUsedException("Email is already in use");
+        }
+        return repository.save(patchedUser);
+    }
+
+    @Transactional
+    public void deleteUserById(Long userId) {
+        repository.removeUserByUserId(userId);
     }
 }

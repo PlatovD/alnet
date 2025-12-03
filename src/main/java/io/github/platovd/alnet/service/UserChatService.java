@@ -46,6 +46,7 @@ public class UserChatService {
         return new UserChatsResponse(user.getUsername(), chatInfos);
     }
 
+    @Transactional(readOnly = true)
     public List<User> getAllMembersOfChat(Long chatId) {
         return userChatRepository.getAllMembersOfChatByChatId(chatId);
     }
@@ -56,10 +57,12 @@ public class UserChatService {
         userChatRepository.deleteByUserUserIdAndChatChatId(user.getUserId(), chat.getChatId());
     }
 
+    @Transactional(readOnly = true)
     public boolean isMemberOfChat(User user, Chat chat) {
         return userChatRepository.existsByUserUserIdAndChatChatId(user.getUserId(), chat.getChatId());
     }
 
+    @Transactional(readOnly = true)
     private Long getCountMembersOfChat(Long chatId, Long userId) {
         return userChatRepository.countMembers(chatId, userId);
     }

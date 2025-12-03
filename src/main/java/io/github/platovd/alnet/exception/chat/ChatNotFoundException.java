@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.exception;
+package io.github.platovd.alnet.exception.chat;
 
 public class ChatNotFoundException extends ChatServiceException {
     public ChatNotFoundException() {

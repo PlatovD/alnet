@@ -1,6 +1,6 @@
 package io.github.platovd.alnet.authentication.contex;
 
-import io.github.platovd.alnet.exception.NoAuthenticationCredentialsException;
+import io.github.platovd.alnet.exception.authentication.NoAuthenticationCredentialsException;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;

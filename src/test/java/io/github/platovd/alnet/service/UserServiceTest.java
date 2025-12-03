@@ -3,7 +3,7 @@ package io.github.platovd.alnet.service;
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.UserServiceException;
+import io.github.platovd.alnet.exception.user.UserServiceException;
 import io.github.platovd.alnet.repository.UserRepository;
 import io.github.platovd.alnet.testutil.FabricForTests;
 import org.junit.jupiter.api.BeforeEach;
