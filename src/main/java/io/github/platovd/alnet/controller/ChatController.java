@@ -1,7 +1,7 @@
 package io.github.platovd.alnet.controller;
 
 import io.github.platovd.alnet.dto.chat.request.ChatCreationOrUpdateRequest;
-import io.github.platovd.alnet.dto.chat.response.ChatResponse;
+import io.github.platovd.alnet.dto.chat.response.ChatDTO;
 import io.github.platovd.alnet.entity.Chat;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.service.AuthenticationService;
@@ -28,29 +28,29 @@ public class ChatController {
     private final AuthenticationService authenticationService;
 
     @GetMapping("/{id}")
-    public ChatResponse getChat(@PathVariable("id") Long chatId) {
+    public ChatDTO getChat(@PathVariable("id") Long chatId) {
         Chat chat = chatService.getChatById(chatId);
         if (!userChatService.isMemberOfChat(authenticationService.getCurrentUser(), chatService.getChatById(chatId))) {
             throw new AuthorizationDeniedException("Current user isn't member of requested chat");
         }
-        return new ChatResponse(chat.getChatId(), chat.getChatName());
+        return new ChatDTO(chat.getChatId(), chat.getChatName());
     }
 
     @PostMapping
-    public ChatResponse createChat(@RequestBody @Valid ChatCreationOrUpdateRequest chatCreationOrUpdateRequest) {
+    public ChatDTO createChat(@RequestBody @Valid ChatCreationOrUpdateRequest chatCreationOrUpdateRequest) {
         Chat chat = chatService.createChat(chatCreationOrUpdateRequest.getName());
         List<User> usersToAdd = userService.getAllUsersByLogin(chatCreationOrUpdateRequest.getMembers());
         userChatService.addAllMembersToChat(usersToAdd, chat);
-        return new ChatResponse(chat.getChatId(), chat.getChatName());
+        return new ChatDTO(chat.getChatId(), chat.getChatName());
     }
 
     @PutMapping
-    public ChatResponse updateChat(@RequestBody @Valid ChatCreationOrUpdateRequest chatCreationOrUpdateRequest) {
+    public ChatDTO updateChat(@RequestBody @Valid ChatCreationOrUpdateRequest chatCreationOrUpdateRequest) {
         Chat chat = chatService.updateChat(chatCreationOrUpdateRequest);
         if (!userChatService.isMemberOfChat(authenticationService.getCurrentUser(), chat)) {
             throw new AuthorizationDeniedException("Current user isn't member of requested chat");
         }
-        return new ChatResponse(chat.getChatId(), chat.getChatName());
+        return new ChatDTO(chat.getChatId(), chat.getChatName());
     }
 
     @DeleteMapping("/{id}")

@@ -8,6 +8,8 @@ import io.github.platovd.alnet.dto.user.response.UserDTO;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.service.AuthenticationService;
 import io.github.platovd.alnet.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,35 +19,44 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "Управление пользователями")
 public class UserController {
     private final AuthenticationService authenticationService;
     private final UserService userService;
 
+    @Operation(description = "Получение данных пользователя")
     @GetMapping("/{userId}")
     public UserDTO getUser(@PathVariable Long userId) {
         User user = userService.getById(userId);
-        return new UserDTO(user);
+        UserDTO response = UserDTO.builder().username(user.getUsername()).build();
+        if (authenticationService.isCurrentUser(user))
+            response.setEmail(user.getEmail());
+        return response;
     }
 
+    @Operation(description = "Обновление пользователя")
     @PutMapping("/{userId}")
-    public UserDTO updateUser(@PathVariable Long userId, @RequestBody @Valid UserPutRequest putRequest) {
+    public UserDTO updateUser(@PathVariable Long userId, @Valid @RequestBody UserPutRequest putRequest) {
         User user = userService.getById(userId);
         if (!authenticationService.isCurrentUser(user))
             throw new AuthorizationDeniedException("Can't edit profile of another user");
-        user = userService.updateFullUser(
+        User updatedUser = userService.updateFullUser(
                 userId, putRequest.getUsername(), putRequest.getEmail()
         );
-        return new UserDTO(user);
+        return UserDTO.builder().username(updatedUser.getUsername()).email(updatedUser.getEmail()).build();
     }
 
+    @Operation(description = "Обновление части данных пользователя")
     @PatchMapping(path = "/{userId}", consumes = "application/json-patch+json")
     public UserDTO patchUser(@PathVariable Long userId, @RequestBody JsonPatch jsonPatch) throws JsonPatchException, JsonProcessingException {
         User user = userService.getById(userId);
         if (!authenticationService.isCurrentUser(user))
             throw new AuthorizationDeniedException("Can't edit profile of another user");
-        return new UserDTO(userService.applyPatchToUser(jsonPatch, user));
+        User patchedUser = userService.applyPatchToUser(jsonPatch, user);
+        return UserDTO.builder().username(patchedUser.getUsername()).email(patchedUser.getEmail()).build();
     }
 
+    @Operation(description = "Удаление пользователя")
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
         User user = userService.getById(userId);

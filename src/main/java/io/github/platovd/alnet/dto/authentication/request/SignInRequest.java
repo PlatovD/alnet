@@ -13,7 +13,7 @@ public class SignInRequest {
     @Schema(description = "Имя пользователя", example = "Dima")
     @Size(min = 3, max = 50, message = "Имя пользователя должно содержать от 3 до 50 символов")
     @NotBlank(message = "Име пользователя не может быть пустым")
-    private String name;
+    private String username;
 
     @Schema(description = "Пароль", example = "my_1ecer10_pa66")
     @Size(min = 6, message = "Пароль должен содержать как минимум 6 символов")

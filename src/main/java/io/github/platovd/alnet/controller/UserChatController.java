@@ -10,6 +10,9 @@ import io.github.platovd.alnet.service.AuthenticationService;
 import io.github.platovd.alnet.service.ChatService;
 import io.github.platovd.alnet.service.UserChatService;
 import io.github.platovd.alnet.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.*;
@@ -19,17 +22,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/membership")
 @RequiredArgsConstructor
+@Tag(name = "Управление членством в чатах")
 public class UserChatController {
     private final UserChatService userChatService;
     private final ChatService chatService;
     private final AuthenticationService authenticationService;
     private final UserService userService;
 
+    @Operation(description = "Получить список чатов пользователя")
     @GetMapping
     public UserChatsResponse getChatsList() {
         return userChatService.getAllChatsForUser(authenticationService.getCurrentUser());
     }
 
+    @Operation(description = "Получить всех членов чата")
     @GetMapping("/{id}")
     public ChatMembersResponse getMembersOfChat(@PathVariable(name = "id") Long chatId) {
         if (!userChatService.isMemberOfChat(authenticationService.getCurrentUser(), chatService.getChatById(chatId))) {
@@ -39,8 +45,9 @@ public class UserChatController {
         return new ChatMembersResponse(chatId, members.stream().map(ChatMemberDTO::new).toList());
     }
 
+    @Operation(description = "Добавить пользователей в чат")
     @PostMapping
-    public ChatMembersResponse addAllMembersToChat(@RequestBody UserChatOperationRequest request) {
+    public ChatMembersResponse addAllMembersToChat(@Valid @RequestBody UserChatOperationRequest request) {
         Chat chat = chatService.getChatById(request.getChatId());
         if (!userChatService.isMemberOfChat(authenticationService.getCurrentUser(), chat)) {
             throw new AuthorizationDeniedException("Current user isn't member of requested chat");

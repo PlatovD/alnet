@@ -32,7 +32,7 @@ public class AuthenticationService {
 
     @Transactional
     public JWTAuthenticationResponse signUp(SignUpRequest signUpRequest) {
-        User user = User.builder().username(signUpRequest.getUsername() )
+        User user = User.builder().username(signUpRequest.getUsername())
                 .email(signUpRequest.getEmail())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
                 .build();
@@ -48,10 +48,10 @@ public class AuthenticationService {
                     securityContextWrapper.getAuthenticatedUserInfo(UserDetails::getUsername));
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(signInRequest.getName(), signInRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword())
             );
 
-            User user = userService.getByUsername(signInRequest.getName());
+            User user = userService.getByUsername(signInRequest.getUsername());
             return new JWTAuthenticationResponse(jwtService.generateJWTAccess(user), jwtService.generateJWTRefresh(user));
         } catch (AuthenticationException e) {
             securityContextWrapper.unAuthenticate();
