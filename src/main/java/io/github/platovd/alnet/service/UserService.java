@@ -43,15 +43,7 @@ public class UserService {
 
     public List<User> getAllUsersByLogin(List<String> members) {
         Set<String> membersNormalized = members.stream().map(String::strip).collect(Collectors.toSet());
-        List<User> users = new ArrayList<>();
-        for (String member : membersNormalized) {
-            try {
-                User user = getByUsername(member);
-                users.add(user);
-            } catch (UserServiceException ignored) {
-            }
-        }
-        return users;
+        return repository.findAllByUsernames(membersNormalized);
     }
 
     @Transactional(readOnly = true)

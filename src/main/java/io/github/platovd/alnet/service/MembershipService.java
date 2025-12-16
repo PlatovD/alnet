@@ -26,7 +26,7 @@ public class MembershipService {
 
     @Transactional
     public void addUserAsMember(User user, Chat chat) {
-        if (isMemberOfChat(user, chat)) return;
+        if (isMemberOfChat(user.getUserId(), chat.getChatId())) return;
         Membership membership = Membership.builder().user(user).chat(chat).build();
         membershipRepository.save(membership);
     }
@@ -64,8 +64,8 @@ public class MembershipService {
     }
 
     @Transactional(readOnly = true)
-    public boolean isMemberOfChat(User user, Chat chat) {
-        return membershipRepository.existsByUserUserIdAndChatChatId(user.getUserId(), chat.getChatId());
+    public boolean isMemberOfChat(Long userId, Long chatId) {
+        return membershipRepository.existsByUserUserIdAndChatChatId(userId, chatId);
     }
 
     @Transactional(readOnly = true)

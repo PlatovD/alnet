@@ -36,10 +36,11 @@ public class MembershipController {
         return membershipService.getAllMembershipsForUser(authenticationService.getCurrentUser());
     }
 
+
     @Operation(description = "Получить всех членов чата")
     @GetMapping("/{id}")
     public ChatMembersResponse getMembersOfChat(@PathVariable(name = "id") Long chatId) {
-        if (!membershipService.isMemberOfChat(authenticationService.getCurrentUser(), chatService.getChatById(chatId))) {
+        if (!membershipService.isMemberOfChat(authenticationService.getCurrentUser().getUserId(), chatService.getChatById(chatId).getChatId())) {
             throw new AuthorizationDeniedException("Current user isn't member of requested chat");
         }
         List<User> members = membershipService.getAllMembersOfChat(chatId);
@@ -50,11 +51,11 @@ public class MembershipController {
     @PostMapping
     public ChatMembersResponse addAllMembersToChat(@Valid @RequestBody MembershipOperationRequest request) {
         Chat chat = chatService.getChatById(request.getChatId());
-        if (!membershipService.isMemberOfChat(authenticationService.getCurrentUser(), chat)) {
+        if (!membershipService.isMemberOfChat(authenticationService.getCurrentUser().getUserId(), chat.getChatId())) {
             throw new AuthorizationDeniedException("Current user isn't member of requested chat");
         }
         List<User> usersToAdd = userService.getAllUsersByLogin(request.getUsernames()).stream().filter(
-                user -> !membershipService.isMemberOfChat(user, chat)
+                user -> !membershipService.isMemberOfChat(user.getUserId(), chat.getChatId())
         ).toList();
         membershipService.addAllMembersToChat(usersToAdd, chat);
         return new ChatMembersResponse(chat.getChatId(), usersToAdd.stream().map(UserMembershipResponse::new).toList());
@@ -64,7 +65,7 @@ public class MembershipController {
     @DeleteMapping
     public ResponseEntity<Void> deleteMemberOfChat(@Valid @RequestBody MembershipOperationRequest request) {
         Chat chat = chatService.getChatById(request.getChatId());
-        if (!membershipService.isMemberOfChat(authenticationService.getCurrentUser(), chat)) {
+        if (!membershipService.isMemberOfChat(authenticationService.getCurrentUser().getUserId(), chat.getChatId())) {
             throw new AuthorizationDeniedException("Current user isn't member of requested chat");
         }
         membershipService.removeAllMembersFromChat(request.getUsernames().stream().map(userService::getByUsername).toList(), chat);
