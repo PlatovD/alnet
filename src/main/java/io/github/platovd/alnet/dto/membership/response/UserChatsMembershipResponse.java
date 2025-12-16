@@ -1,6 +1,6 @@
-package io.github.platovd.alnet.dto.userchat.response;
+package io.github.platovd.alnet.dto.membership.response;
 
-import io.github.platovd.alnet.mapper.info.ChatInfoDTO;
+import io.github.platovd.alnet.dto.chat.response.ChatResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,10 +14,10 @@ import java.util.Collection;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Ответ с информацией о чатах")
-public class UserChatsResponse {
+public class UserChatsMembershipResponse {
     @Schema(description = "Чат-лист подготовлен для пользователя с логином", example = "alexis125")
     private String login;
 
     @Schema(description = "Список чатов данного пользователя")
-    private Collection<ChatInfoDTO> chats;
+    private Collection<ChatResponse> chats;
 }

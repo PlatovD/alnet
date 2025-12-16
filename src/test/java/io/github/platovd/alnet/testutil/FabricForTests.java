@@ -32,11 +32,11 @@ public class FabricForTests {
     }
 
     public static SignUpRequest signUpRequest() {
-        return SignUpRequest.builder().name(USERNAME).email(EMAIL).password(PASSWORD).build();
+        return SignUpRequest.builder().username(USERNAME).email(EMAIL).password(PASSWORD).build();
     }
 
     public static SignInRequest signInRequest() {
-        return SignInRequest.builder().name(USERNAME).password(PASSWORD).build();
+        return SignInRequest.builder().username(USERNAME).password(PASSWORD).build();
     }
 
     public static RefreshRequest refreshRequest() {

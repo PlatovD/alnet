@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.dto.user.response;
+package io.github.platovd.alnet.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

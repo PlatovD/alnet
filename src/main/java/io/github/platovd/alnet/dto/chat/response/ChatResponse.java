@@ -7,7 +7,7 @@ import lombok.Data;
 @Schema(name = "Ответ в виде сущности чата")
 @AllArgsConstructor
 @Data
-public class ChatDTO {
+public class ChatResponse {
     @Schema(name = "Идентификатор чата")
     private Long id;
     @Schema(name = "Название чата")

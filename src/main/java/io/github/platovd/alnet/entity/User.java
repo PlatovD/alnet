@@ -36,5 +36,5 @@ public class User {
     private List<Role> role;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<UserChat> userChat;
+    private List<Membership> membership;
 }

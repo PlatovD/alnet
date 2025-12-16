@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.dto.userchat.request;
+package io.github.platovd.alnet.dto.membership.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -12,11 +12,11 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "Запрос на операцию с пользователем чата")
-public class UserChatOperationRequest {
+@Schema(name = "Список пользователей данного чата")
+public class ChatMembersResponse {
     @Schema(name = "Идентификатор чата")
     private Long chatId;
 
-    @Schema(name = "Имя пользователя")
-    private List<String> usernames;
+    @Schema(name = "Участники чата")
+    private List<UserMembershipResponse> members;
 }

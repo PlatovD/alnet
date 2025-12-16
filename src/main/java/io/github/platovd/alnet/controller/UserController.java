@@ -3,8 +3,7 @@ package io.github.platovd.alnet.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
-import io.github.platovd.alnet.dto.user.request.UserPutRequest;
-import io.github.platovd.alnet.dto.user.response.UserDTO;
+import io.github.platovd.alnet.dto.user.UserDTO;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.service.AuthenticationService;
 import io.github.platovd.alnet.service.UserService;
@@ -36,7 +35,7 @@ public class UserController {
 
     @Operation(description = "Обновление пользователя")
     @PutMapping("/{userId}")
-    public UserDTO updateUser(@PathVariable Long userId, @Valid @RequestBody UserPutRequest putRequest) {
+    public UserDTO updateUser(@PathVariable Long userId, @Valid @RequestBody UserDTO putRequest) {
         User user = userService.getById(userId);
         if (!authenticationService.isCurrentUser(user))
             throw new AuthorizationDeniedException("Can't edit profile of another user");

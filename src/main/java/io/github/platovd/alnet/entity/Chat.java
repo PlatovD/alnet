@@ -22,7 +22,7 @@ public class Chat {
     private String chatName;
 
     @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<UserChat> userChat;
+    private List<Membership> membership;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, targetEntity = Message.class, fetch = FetchType.LAZY)
     private List<Message> messages;
