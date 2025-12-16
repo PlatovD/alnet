@@ -1,6 +1,7 @@
 package io.github.platovd.alnet.dto.membership.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +14,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "Список пользователей данного чата")
+@NotNull
 public class ChatMembersResponse {
-    @Schema(name = "Идентификатор чата")
+    @Min(1)
+    @Max(Long.MAX_VALUE)
     private Long chatId;
 
-    @Schema(name = "Участники чата")
+    @NotNull
+    @NotEmpty
     private List<UserMembershipResponse> members;
 }

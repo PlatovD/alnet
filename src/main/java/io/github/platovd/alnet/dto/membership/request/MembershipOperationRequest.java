@@ -1,6 +1,8 @@
 package io.github.platovd.alnet.dto.membership.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,11 +14,11 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "Запрос на операцию с пользователем чата")
+@Schema(description = "Запрос на операцию с пользователем чата")
+@NotNull
 public class MembershipOperationRequest {
-    @Schema(name = "Идентификатор чата")
     private Long chatId;
 
-    @Schema(name = "Имя пользователя")
+    @Size(min = 1, max = 100)
     private List<String> usernames;
 }
