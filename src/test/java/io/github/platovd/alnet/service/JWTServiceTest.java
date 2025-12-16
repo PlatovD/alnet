@@ -2,6 +2,7 @@ package io.github.platovd.alnet.service;
 
 import io.github.platovd.alnet.entity.Role;
 import io.github.platovd.alnet.entity.User;
+import io.github.platovd.alnet.service.atomic.JWTService;
 import io.github.platovd.alnet.testutil.FabricForTests;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;

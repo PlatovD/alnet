@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.service;
+package io.github.platovd.alnet.service.atomic;
 
 import io.github.platovd.alnet.dto.chat.response.ChatResponse;
 import io.github.platovd.alnet.dto.membership.response.UserChatsMembershipResponse;

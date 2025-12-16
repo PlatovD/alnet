@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.service;
+package io.github.platovd.alnet.service.atomic;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,11 +8,11 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.user.*;
 import io.github.platovd.alnet.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,26 +22,24 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository repository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
 
-    protected void save(User user) {
-        repository.save(user);
-    }
-
     @Transactional
-    public void create(User user) {
-        if (repository.existsByUsername(user.getUsername())) {
+    public User create(String username, String email, String password) {
+        if (repository.existsByUsername(username)) {
             throw new UsernameUsedException("Username is already in use");
         }
 
-        if (repository.existsByEmail(user.getEmail())) {
+        if (repository.existsByEmail(email)) {
             throw new EmailUsedException("Email is already in use");
         }
-
-        save(user);
+        String encodedPassword = passwordEncoder.encode(password);
+        User user = User.builder().username(username).email(email).password(encodedPassword).build();
+        return repository.save(user);
     }
 
-    public List<User> getAllUsersByLogin(List<String> members) {
+    public List<User> getAllUsersByUsername(List<String> members) {
         Set<String> membersNormalized = members.stream().map(String::strip).collect(Collectors.toSet());
         return repository.findAllByUsernames(membersNormalized);
     }

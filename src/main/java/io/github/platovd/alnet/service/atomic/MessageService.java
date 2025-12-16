@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.service;
+package io.github.platovd.alnet.service.atomic;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.service;
+package io.github.platovd.alnet.service.atomic;
 
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.authentication.UnknownTokenTypeException;

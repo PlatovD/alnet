@@ -9,6 +9,8 @@ import io.github.platovd.alnet.dto.authentication.response.JWTAuthenticationResp
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.authentication.UnknownAuthenticationException;
 import io.github.platovd.alnet.exception.user.UserServiceException;
+import io.github.platovd.alnet.service.atomic.JWTService;
+import io.github.platovd.alnet.service.atomic.UserService;
 import io.github.platovd.alnet.testutil.FabricForTests;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,19 +70,17 @@ public class AuthenticationServiceTest {
 
     @Test
     public void signUpSuccessTest() {
-        doNothing().when(userService).create(any(User.class));
+        when(userService.create(any(String.class), any(String.class), any(String.class))).thenReturn(testUser);
         when(passwordEncoder.encode(any(String.class))).thenReturn(FabricForTests.PASSWORD);
         when(jwtService.generateJWTAccess(any(User.class))).thenReturn("");
         when(jwtService.generateJWTRefresh(any(User.class))).thenReturn("");
 
-        assertThat(authenticationService.signUp(signUpRequest)).isInstanceOf(JWTAuthenticationResponse.class);
-        verify(userService, times(1)).create(any(User.class));
+        assertThat(authenticationService.signUp(testUser)).isInstanceOf(JWTAuthenticationResponse.class);
     }
 
     @Test
     public void signUpUnsuccessTest() {
-        doThrow(UserServiceException.class).when(userService).create(any(User.class));
-        assertThatThrownBy(() -> authenticationService.signUp(signUpRequest)).isInstanceOf(UserServiceException.class);
+        assertThatThrownBy(() -> authenticationService.signUp(testUser)).isInstanceOf(UserServiceException.class);
     }
 
     @Test

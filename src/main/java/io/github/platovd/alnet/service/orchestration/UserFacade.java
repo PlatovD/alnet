@@ -1,8 +1,7 @@
-package io.github.platovd.alnet.service;
+package io.github.platovd.alnet.service.orchestration;
 
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
-
 import io.github.platovd.alnet.dto.authentication.request.RefreshRequest;
 import io.github.platovd.alnet.dto.authentication.request.SignInRequest;
 import io.github.platovd.alnet.dto.authentication.request.SignUpRequest;
@@ -11,19 +10,21 @@ import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.authentication.AlreadyAuthenticatedException;
 import io.github.platovd.alnet.exception.authentication.InvalidRefreshTokenException;
 import io.github.platovd.alnet.exception.user.UserServiceException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
+import io.github.platovd.alnet.service.atomic.JWTService;
+import io.github.platovd.alnet.service.atomic.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class UserFacade {
     private final UserService userService;
     private final JWTService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -32,12 +33,8 @@ public class AuthenticationService {
 
     @Transactional
     public JWTAuthenticationResponse signUp(SignUpRequest signUpRequest) {
-        User user = User.builder().username(signUpRequest.getUsername())
-                .email(signUpRequest.getEmail())
-                .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .build();
-
-        userService.create(user);
+        User user = userService.create(signUpRequest.getUsername(), signUpRequest.getEmail(),
+                passwordEncoder.encode(signUpRequest.getPassword()));
         return new JWTAuthenticationResponse(jwtService.generateJWTAccess(user), jwtService.generateJWTRefresh(user));
     }
 
