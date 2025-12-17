@@ -1,18 +1,15 @@
 package io.github.platovd.alnet.service.atomic;
 
-import io.github.platovd.alnet.dto.chat.response.ChatResponse;
-import io.github.platovd.alnet.dto.membership.response.UserChatsMembershipResponse;
 import io.github.platovd.alnet.entity.Chat;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.entity.Membership;
-import io.github.platovd.alnet.mapper.ChatMapper;
 import io.github.platovd.alnet.repository.MembershipRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Сервис, который работает с промежуточной таблицей user_chat и связывает пользователей с чатами,
@@ -21,55 +18,52 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MembershipService {
-    private final MembershipRepository membershipRepository;
-    private final ChatMapper chatMapper;
+    private final MembershipRepository repository;
 
     @Transactional
     public void addUserAsMember(User user, Chat chat) {
         if (isMemberOfChat(user.getUserId(), chat.getChatId())) return;
         Membership membership = Membership.builder().user(user).chat(chat).build();
-        membershipRepository.save(membership);
+        repository.save(membership);
     }
 
     @Transactional
     public void addAllMembersToChat(List<User> users, Chat chat) {
-        for (User user : users) {
-            Membership membership = Membership.builder().user(user).chat(chat).build();
-            membershipRepository.save(membership);
-        }
+        if (users == null || users.isEmpty()) return;
+        Set<Long> existingIds = repository.getAllExistingInChatUsersIds(users.stream().map(User::getUserId).toList(), chat.getChatId());
+        List<Membership> memberships = users.stream().filter(user -> !existingIds.contains(user.getUserId()))
+                .map(user -> Membership.builder().user(user).chat(chat).build()).toList();
+        repository.saveAll(memberships);
     }
 
     @Transactional(readOnly = true)
-    public UserChatsMembershipResponse getAllMembershipsForUser(User user) {
-        List<Membership> chats = membershipRepository.getAllByUserUserId(user.getUserId());
-        Collection<ChatResponse> chatInfos = chatMapper.allToDTO(chats.stream().map(Membership::getChat).toList());
-        return new UserChatsMembershipResponse(user.getUsername(), chatInfos);
+    public List<Membership> getAllMembershipsForUser(User user) {
+        return repository.getAllByUserUserId(user.getUserId());
     }
 
     @Transactional(readOnly = true)
     public List<User> getAllMembersOfChat(Long chatId) {
-        return membershipRepository.getAllMembersOfChatByChatId(chatId);
+        return repository.getAllMembersOfChatByChatId(chatId);
     }
 
     @Transactional
     public void removeMemberFromChat(User user, Chat chat) {
-        membershipRepository.deleteByUserUserIdAndChatChatId(user.getUserId(), chat.getChatId());
+        repository.deleteByUserUserIdAndChatChatId(user.getUserId(), chat.getChatId());
     }
 
     @Transactional
     public void removeAllMembersFromChat(List<User> users, Chat chat) {
-        for (User user : users) {
-            removeMemberFromChat(user, chat);
-        }
+        if (users == null || users.isEmpty()) return;
+        repository.removeAllByUserUserIdAndChatChatId(users.stream().map(User::getUserId).toList(), chat.getChatId());
     }
 
     @Transactional(readOnly = true)
     public boolean isMemberOfChat(Long userId, Long chatId) {
-        return membershipRepository.existsByUserUserIdAndChatChatId(userId, chatId);
+        return repository.existsByUserUserIdAndChatChatId(userId, chatId);
     }
 
     @Transactional(readOnly = true)
     protected Long getCountMembersOfChat(Long chatId) {
-        return membershipRepository.countMembersOfChat(chatId);
+        return repository.countMembersOfChat(chatId);
     }
 }

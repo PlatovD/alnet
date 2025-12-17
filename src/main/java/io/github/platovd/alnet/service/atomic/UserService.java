@@ -5,9 +5,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.user.*;
+import io.github.platovd.alnet.mapper.UserMapper;
 import io.github.platovd.alnet.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +31,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
+    private final SecurityContextWrapper securityContextWrapper;
 
     @Transactional
     public User create(String username, String email, String password) {
@@ -87,5 +95,56 @@ public class UserService {
     @Transactional
     public void deleteUserById(Long userId) {
         repository.removeUserByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public User getCurrentUser() {
+        if (!securityContextWrapper.isAuthenticated())
+            throw new UserServiceException("No authentication found. Current authentication is " +
+                    securityContextWrapper.getAuthentication());
+        Authentication authentication = securityContextWrapper.getAuthentication();
+        if (authentication instanceof JWTAuthToken jwtAuthToken) {
+            return getById(jwtAuthToken.getId());
+        }
+        return getByUsername(authentication.getName());
+    }
+
+    /**
+     * ПРЕДУПРЕЖДЕНИЕ: Передаваемый геттер ДОЛЖЕН ссылаться на уникальное поле.
+     * Использование неуникальных полей (например, firstName) приведет к ложноположительным результатам.
+     *
+     * @apiNote Prefer {@link #isCurrentUserById(Long)} or {@link #isCurrentUserByUser(User)} for better safety.
+     */
+    @Transactional(readOnly = true)
+    public <T> boolean isCurrentUser(T uniqueFeature, Function<User, T> userFieldSupplier) {
+        return userFieldSupplier.apply(getCurrentUser()).equals(uniqueFeature);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isCurrentUserByUser(User user) {
+        return getCurrentUser().equals(user);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isCurrentUserById(Long userId) {
+        return getCurrentUser().getUserId().equals(userId);
+    }
+
+    /**
+     * Создан для того, чтобы не делать лишние запросы к бд
+     *
+     * @return String username
+     * @throws UserServiceException no auth exception
+     */
+    public String getCurrentUserName() {
+        if (!securityContextWrapper.isAuthenticated())
+            throw new UserServiceException("No authentication found. Current authentication is " +
+                    securityContextWrapper.getAuthentication());
+        return securityContextWrapper.getAuthenticatedUserInfo(UserDetails::getUsername);
+    }
+
+
+    public void unAuthenticate() {
+        securityContextWrapper.unAuthenticate();
     }
 }

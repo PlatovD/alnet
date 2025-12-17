@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @NotNull
 public class UserDTO {
+    private Long userId;
     @Size(min = 3)
     private String username;
     @Email
