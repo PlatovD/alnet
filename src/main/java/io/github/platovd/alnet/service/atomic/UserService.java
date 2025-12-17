@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -28,7 +29,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository repository;
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
     private final SecurityContextWrapper securityContextWrapper;
@@ -48,7 +48,8 @@ public class UserService {
     }
 
     public List<User> getAllUsersByUsername(List<String> members) {
-        Set<String> membersNormalized = members.stream().map(String::strip).collect(Collectors.toSet());
+        Set<String> membersNormalized = members.stream().map(String::strip).filter(s -> !s.isEmpty()).collect(Collectors.toSet());
+        if (membersNormalized.isEmpty()) return new ArrayList<>();
         return repository.findAllByUsernames(membersNormalized);
     }
 
@@ -68,7 +69,7 @@ public class UserService {
         User user = getById(userId);
         user.setUsername(username);
         user.setEmail(email);
-        return userRepository.save(user);
+        return repository.save(user);
     }
 
     @Transactional
@@ -83,10 +84,10 @@ public class UserService {
         patchedUser.setPassword(targetUser.getPassword());
 
         if (!patchedUser.getUsername().equals(targetUser.getUsername()))
-            if (userRepository.existsByUsername(patchedUser.getUsername()))
+            if (repository.existsByUsername(patchedUser.getUsername()))
                 throw new UsernameUsedException("Username is already in use");
         if (!patchedUser.getEmail().equals(targetUser.getEmail())) {
-            if (userRepository.existsByEmail(patchedUser.getEmail()))
+            if (repository.existsByEmail(patchedUser.getEmail()))
                 throw new EmailUsedException("Email is already in use");
         }
         return repository.save(patchedUser);
