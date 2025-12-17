@@ -6,9 +6,8 @@ import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.authentication.IllegalTokenClassException;
 import io.github.platovd.alnet.exception.authentication.InvalidAccessTokenException;
 import io.github.platovd.alnet.exception.authentication.UnknownAuthenticationException;
-import io.github.platovd.alnet.exception.user.UserServiceException;
-import io.github.platovd.alnet.service.JWTService;
-import io.github.platovd.alnet.service.UserService;
+import io.github.platovd.alnet.repository.UserRepository;
+import io.github.platovd.alnet.service.atomic.JWTService;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -16,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
  * Кастомный класс аутентификации, который добавляется в ProviderManager, который в свою очередь имплементит
@@ -28,7 +29,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JWTAuthenticationProvider implements AuthenticationProvider {
     private final JWTService jwtService;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final String REQUIRED_TOKEN_TYPE = "access";
 
     @Override
@@ -45,15 +46,16 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
         try {
             String token = jwtAuth.getToken();
             Long userId = jwtService.extractId(token); // выбросит JwtException, если токен не валиден по ключу шифрования
-            User user = userService.getById(userId); // выбросит UserServiceException если не найдет
+            Optional<User> user = userRepository.findById(userId); // здесь использую репо специально чтобы не было циклической зависимости в userservice
+            if (user.isEmpty()) throw new JwtException("No user with extracted id");
 
             // проверяю токен на истечение, проверяю тип токена
-            if (!jwtService.isTypeOf(token, REQUIRED_TOKEN_TYPE) || !jwtService.isTokenValid(token, user))
+            if (!jwtService.isTypeOf(token, REQUIRED_TOKEN_TYPE) || !jwtService.isTokenValid(token, user.orElse(null)))
                 throw new InvalidAccessTokenException("Given token isn't valid for user");
 
             // маппим User -> UserDetails для сохранения информации о пользователе в объекте Authentication
             // делаю это для того, чтобы отделить бизнес логику и обертку для Security
-            UserDetails details = AuthUtil.fromUserToUserDetails(user);
+            UserDetails details = AuthUtil.fromUserToUserDetails(user.orElse(null));
             // возвращаю Authentication с isAuthenticated() = true
             return new JWTAuthToken(
                     token,
@@ -63,7 +65,7 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
                     userId
             );
 
-        } catch (JwtException | UserServiceException exception) {
+        } catch (JwtException exception) {
             throw new InvalidAccessTokenException("Authentication went wrong. Access denied. Cause: " + exception.getMessage());
         } catch (Exception e) {
             throw new UnknownAuthenticationException("Authentication failed. Unknown exception");

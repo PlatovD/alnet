@@ -1,6 +1,6 @@
 package io.github.platovd.alnet.dto.membership.response;
 
-import io.github.platovd.alnet.dto.chat.response.ChatResponse;
+import io.github.platovd.alnet.dto.chat.ChatDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,7 +19,7 @@ import java.util.Collection;
 public class UserChatsMembershipResponse {
     @NotBlank
     @Size(min = 3)
-    private String login;
+    private String username;
 
-    private Collection<ChatResponse> chats;
+    private Collection<ChatDTO> chats;
 }

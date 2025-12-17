@@ -1,43 +1,47 @@
-package io.github.platovd.alnet.service;
+package io.github.platovd.alnet.service.orchestration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
-import io.github.platovd.alnet.authentication.token.JWTAuthToken;
-
 import io.github.platovd.alnet.dto.authentication.request.RefreshRequest;
 import io.github.platovd.alnet.dto.authentication.request.SignInRequest;
 import io.github.platovd.alnet.dto.authentication.request.SignUpRequest;
 import io.github.platovd.alnet.dto.authentication.response.JWTAuthenticationResponse;
+import io.github.platovd.alnet.dto.user.UserDTO;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.authentication.AlreadyAuthenticatedException;
 import io.github.platovd.alnet.exception.authentication.InvalidRefreshTokenException;
-import io.github.platovd.alnet.exception.user.UserServiceException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
+import io.github.platovd.alnet.exception.base.WrongDataException;
+import io.github.platovd.alnet.mapper.UserMapper;
+import io.github.platovd.alnet.service.atomic.JWTService;
+import io.github.platovd.alnet.service.atomic.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class UserFacade {
     private final UserService userService;
     private final JWTService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final SecurityContextWrapper securityContextWrapper;
+    private final UserMapper userMapper;
 
     @Transactional
     public JWTAuthenticationResponse signUp(SignUpRequest signUpRequest) {
-        User user = User.builder().username(signUpRequest.getUsername())
-                .email(signUpRequest.getEmail())
-                .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .build();
-
-        userService.create(user);
+        User user = userService.create(signUpRequest.getUsername(), signUpRequest.getEmail(),
+                passwordEncoder.encode(signUpRequest.getPassword()));
         return new JWTAuthenticationResponse(jwtService.generateJWTAccess(user), jwtService.generateJWTRefresh(user));
     }
 
@@ -71,36 +75,33 @@ public class AuthenticationService {
     }
 
     @Transactional(readOnly = true)
-    public User getCurrentUser() {
-        if (!securityContextWrapper.isAuthenticated())
-            throw new UserServiceException("No authentication found. Current authentication is " +
-                    securityContextWrapper.getAuthentication());
-        Authentication authentication = securityContextWrapper.getAuthentication();
-        if (authentication instanceof JWTAuthToken jwtAuthToken) {
-            return userService.getById(jwtAuthToken.getId());
-        }
-        return userService.getByUsername(authentication.getName());
+    public UserDTO getUser(Long userId) {
+        User user = userService.getById(userId);
+        UserDTO response = userMapper.toDTO(user);
+        if (!userService.isCurrentUser(user.getUserId(), User::getUserId))
+            response.setEmail("");
+        return response;
     }
 
-    @Transactional(readOnly = true)
-    public boolean isCurrentUser(User user) {
-        return getCurrentUser().getUserId().equals(user.getUserId());
+    @Transactional
+    public UserDTO updateFullUser(Long userId, UserDTO putRequest) {
+        if (!Objects.equals(userId, putRequest.getUserId()))
+            throw new WrongDataException("Url param and request body have conflict information");
+        User updatedUser = userService.updateFullUser(
+                userId, putRequest.getUsername(), putRequest.getEmail()
+        );
+        return userMapper.toDTO(updatedUser);
     }
 
-    public void unAuthenticate() {
-        securityContextWrapper.unAuthenticate();
+    public UserDTO patchUserById(Long userId, JsonPatch jsonPatch) throws JsonPatchException, JsonProcessingException {
+        User user = userService.getById(userId);
+        User patchedUser = userService.applyPatchToUser(jsonPatch, user);
+        return userMapper.toDTO(patchedUser);
     }
 
-    /**
-     * Создан для того, чтобы не делать лишние запросы к бд
-     *
-     * @return String username
-     * @throws UserServiceException no auth exception
-     */
-    public String getCurrentUserName() {
-        if (!securityContextWrapper.isAuthenticated())
-            throw new UserServiceException("No authentication found. Current authentication is " +
-                    securityContextWrapper.getAuthentication());
-        return securityContextWrapper.getAuthenticatedUserInfo(UserDetails::getUsername);
+    public ResponseEntity<String> deleteUser(Long userId) {
+        userService.unAuthenticate();
+        userService.deleteUserById(userId);
+        return ResponseEntity.ok("Deleted");
     }
 }
