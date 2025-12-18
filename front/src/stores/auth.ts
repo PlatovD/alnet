@@ -9,6 +9,17 @@ interface AuthState {
   email: string | null;
 }
 
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const [, payload] = token.split('.');
+    if (!payload) return null;
+    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decoded) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     accessToken: null,
@@ -41,9 +52,20 @@ export const useAuthStore = defineStore('auth', {
       };
       localStorage.setItem('alnet_auth', JSON.stringify(payload));
     },
-    setTokens(access: string, refresh: string) {
-      this.accessToken = access;
+    setTokens(token: string, refresh: string) {
+      this.accessToken = token;
       this.refreshToken = refresh;
+      const payload = decodeJwtPayload(token);
+      if (payload) {
+        const id = (payload as any).jti ?? (payload as any).id;
+        const sub = (payload as any).sub;
+        if (typeof id === 'string' || typeof id === 'number') {
+          this.userId = Number(id);
+        }
+        if (typeof sub === 'string') {
+          this.username = sub;
+        }
+      }
       this.persist();
     },
     setUserInfo(payload: { userId: number; username: string; email: string }) {
@@ -61,40 +83,25 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('alnet_auth');
     },
     async signIn(username: string, password: string) {
-      console.log('[auth] signIn request payload', { username, password });
       try {
         const { data } = await api.post('/auth/sign-in', { username, password });
-        console.log('[auth] signIn response', data);
-        // adjust field names if your DTO is different
-        this.setTokens(data.access, data.refresh);
+        this.setTokens(data.token, data.refresh);
       } catch (e: any) {
-        console.error('[auth] signIn error', {
-          message: e?.message,
-          status: e?.response?.status,
-          data: e?.response?.data
-        });
         throw e;
       }
     },
     async signUp(username: string, email: string, password: string) {
-      console.log('[auth] signUp request payload', { username, email, password });
       try {
         const { data } = await api.post('/auth/sign-up', { username, email, password });
-        console.log('[auth] signUp response', data);
-        this.setTokens(data.access, data.refresh);
+        this.setTokens(data.token, data.refresh);
       } catch (e: any) {
-        console.error('[auth] signUp error', {
-          message: e?.message,
-          status: e?.response?.status,
-          data: e?.response?.data
-        });
         throw e;
       }
     },
     async refresh() {
       if (!this.refreshToken) return;
       const { data } = await api.post('/auth/refresh', { refresh: this.refreshToken });
-      this.setTokens(data.access, data.refresh);
+      this.setTokens(data.token, data.refresh);
     },
     async fetchCurrentUser() {
       if (!this.userId) return;

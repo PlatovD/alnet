@@ -6,6 +6,7 @@
         <RouterLink to="/">Home</RouterLink>
         <RouterLink v-if="!isAuthenticated" to="/login">Login</RouterLink>
         <RouterLink v-if="!isAuthenticated" to="/register">Register</RouterLink>
+        <RouterLink v-if="isAuthenticated" to="/chats">Chats</RouterLink>
         <RouterLink v-if="isAuthenticated" to="/profile">Profile</RouterLink>
         <button v-if="isAuthenticated" class="link-button" @click="logout">
           Logout

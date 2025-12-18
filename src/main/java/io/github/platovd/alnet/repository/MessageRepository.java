@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    @Query("select mes FROM Message mes JOIN FETCH mes.user JOIN FETCH mes.chat WHERE mes.chat.chatId =:chatId ORDER BY mes.creationTime")
+    @Query("select mes FROM Message mes JOIN FETCH mes.user JOIN FETCH mes.chat WHERE mes.chat.chatId =:chatId")
     Slice<Message> getAllMessagesOfChatPaginated(@Param("chatId") Long chatId, Pageable pageable);
 }

@@ -12,7 +12,14 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const authStore = useAuthStore();
   const token = authStore.accessToken;
-  if (token) {
+  const url = config.url ?? '';
+
+  const isAuthEndpoint =
+    url.startsWith('/auth/sign-in') ||
+    url.startsWith('/auth/sign-up') ||
+    url.startsWith('/auth/refresh');
+
+  if (token && !isAuthEndpoint) {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
