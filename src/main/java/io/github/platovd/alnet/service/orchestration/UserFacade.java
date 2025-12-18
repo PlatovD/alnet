@@ -33,7 +33,6 @@ import java.util.Objects;
 public class UserFacade {
     private final UserService userService;
     private final JWTService jwtService;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final SecurityContextWrapper securityContextWrapper;
     private final UserMapper userMapper;
@@ -41,7 +40,7 @@ public class UserFacade {
     @Transactional
     public JWTAuthenticationResponse signUp(SignUpRequest signUpRequest) {
         User user = userService.create(signUpRequest.getUsername(), signUpRequest.getEmail(),
-                passwordEncoder.encode(signUpRequest.getPassword()));
+                signUpRequest.getPassword());
         return new JWTAuthenticationResponse(jwtService.generateJWTAccess(user), jwtService.generateJWTRefresh(user));
     }
 
@@ -99,9 +98,8 @@ public class UserFacade {
         return userMapper.toDTO(patchedUser);
     }
 
-    public ResponseEntity<String> deleteUser(Long userId) {
+    public void deleteUser(Long userId) {
         userService.unAuthenticate();
         userService.deleteUserById(userId);
-        return ResponseEntity.ok("Deleted");
     }
 }

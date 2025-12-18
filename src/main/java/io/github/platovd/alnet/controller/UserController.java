@@ -46,7 +46,8 @@ public class UserController {
     @PreAuthorize("@userSecurity.isCurrentUser(#userId)")
     @Operation(description = "Удаление пользователя")
     @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
-        return userFacade.deleteUser(userId);
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        userFacade.deleteUser(userId);
+        return ResponseEntity.status(204).build();
     }
 }

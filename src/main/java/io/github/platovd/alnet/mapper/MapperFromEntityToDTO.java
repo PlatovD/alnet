@@ -2,8 +2,8 @@ package io.github.platovd.alnet.mapper;
 
 import java.util.Collection;
 
-public interface MapperFromEntityToDTO<T, V> {
-    V toDTO(T entity);
+public interface MapperFromEntityToDTO<E, D> {
+    D toDTO(E entity);
 
-    Collection<V> allToDTO(Collection<T> entities);
+    Collection<D> allToDTO(Collection<E> entities);
 }

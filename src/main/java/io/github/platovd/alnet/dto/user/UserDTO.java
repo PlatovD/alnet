@@ -1,9 +1,7 @@
 package io.github.platovd.alnet.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @NotNull
 public class UserDTO {
+    @Min(1)
+    @Max(Long.MAX_VALUE)
     private Long userId;
     @Size(min = 3)
     private String username;

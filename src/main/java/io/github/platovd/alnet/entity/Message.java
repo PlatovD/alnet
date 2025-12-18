@@ -2,6 +2,7 @@ package io.github.platovd.alnet.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -18,10 +19,11 @@ public class Message {
     @Column(name = "message_id")
     private Long messageId;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false, length = 2000)
     private String content;
 
     @Column(name = "time")
+    @CreationTimestamp
     private LocalDateTime creationTime;
 
     @ManyToOne(optional = false, targetEntity = Chat.class)
