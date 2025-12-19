@@ -10,7 +10,7 @@ import java.util.Collection;
 public class UserMapper implements MapperFromEntityToDTO<User, UserDTO> {
     @Override
     public UserDTO toDTO(User entity) {
-        return new UserDTO(entity.getUserId(), entity.getUsername(), entity.getEmail());
+        return new UserDTO(entity.getUserId(), entity.getUsername(), entity.getStatus(), entity.getEmail());
     }
 
     @Override

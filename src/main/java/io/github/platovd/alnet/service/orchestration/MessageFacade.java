@@ -12,13 +12,10 @@ import io.github.platovd.alnet.service.atomic.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
-import java.util.Collection;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,19 +24,23 @@ public class MessageFacade {
     private final MessageMapper messageMapper;
     private final UserService userService;
     private final ChatService chatService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional(readOnly = true)
     public Slice<MessageResponse> getAllMessagesOfChat(Long chatId, Pageable pageable) {
         return messageService.getAllChatMessages(chatId, pageable).map(messageMapper::toDTO);
     }
 
+    @PreAuthorize("@membershipSecurity.isMember(#chatId)")
     @Transactional
     public MessageResponse sendMessageToChat(Long chatId, MessageRequest messageRequest) {
         // todo: вот здесь по идее должны происходить еще и события с websocket
         User user = userService.getCurrentUser();
         Chat chat = chatService.getChatById(chatId);
         Message message = messageService.createMessage(messageRequest.getContent(), user, chat);
-        return messageMapper.toDTO(message);
+        MessageResponse dto = messageMapper.toDTO(message);
+        messagingTemplate.convertAndSend("/topic/chats/" + chatId, dto);
+        return dto;
     }
 
     public MessageResponse updateMessageContent(Long messageId, MessageRequest messageRequest) {
@@ -47,6 +48,6 @@ public class MessageFacade {
     }
 
     public void deleteMessage(Long messageId) {
-
+        messageService.deleteMessage(messageId);
     }
 }
