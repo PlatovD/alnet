@@ -137,9 +137,9 @@ onMounted(() => {
 .chats-layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1.5fr);
-  gap: 1.5rem;
+  gap: 2rem;
   width: 100%;
-  max-width: 960px;
+  max-width: 1000px;
 }
 
 @media (max-width: 900px) {
@@ -150,47 +150,64 @@ onMounted(() => {
 
 .chats-card {
   max-width: none;
+  border: 1px solid #1a1a1a;
+  padding: 2rem;
 }
 
 .create-chat-card {
   max-width: none;
+  border: 1px solid #1a1a1a;
+  padding: 2rem;
+}
+
+.chats-card h2,
+.create-chat-card h2 {
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 1.5rem 0;
+  opacity: 0.7;
 }
 
 .chat-list {
   list-style: none;
   padding: 0;
-  margin: 0.75rem 0 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 .chat-item {
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.6rem;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  padding: 1rem;
+  border: 1px solid #1a1a1a;
+  background: #000000;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .chat-item:hover {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: rgba(148, 163, 184, 0.4);
-  transform: translateX(2px);
+  border-color: #ffffff;
 }
 
 .chat-name {
-  font-weight: 600;
-  margin-bottom: 0.15rem;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .chat-meta {
-  font-size: 0.8rem;
-  color: #9ca3af;
+  font-size: 0.7rem;
+  color: #ffffff;
+  opacity: 0.5;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 </style>
 

@@ -48,7 +48,17 @@ const onSubmit = async () => {
   } finally {
     loading.value = false;
   }
-};
+  };
 </script>
 
+<style scoped>
+.card h2 {
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 2rem 0;
+  opacity: 0.7;
+}
+</style>
 

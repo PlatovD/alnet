@@ -18,7 +18,28 @@ import { storeToRefs } from 'pinia';
 import { useAuthStore } from '../stores/auth';
 
 const auth = useAuthStore();
-const { isAuthenticated, username } = storeToRefs(auth);
+  const { isAuthenticated, username } = storeToRefs(auth);
 </script>
 
+<style scoped>
+.card h2 {
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 1.5rem 0;
+  opacity: 0.7;
+}
+
+.card p {
+  font-size: 0.875rem;
+  line-height: 1.8;
+  opacity: 0.8;
+}
+
+.card strong {
+  font-weight: 400;
+  opacity: 1;
+}
+</style>
 
