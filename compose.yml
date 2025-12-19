@@ -1,4 +1,17 @@
 services:
+  node_alnet:
+    build: ./front
+    container_name: node_alnet
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    networks:
+      - app
+    command: npm run dev
+    depends_on:
+      - spring_alnet
+
   nginx_alnet:
     image: nginx:1.25-alpine
     container_name: nginx_alnet

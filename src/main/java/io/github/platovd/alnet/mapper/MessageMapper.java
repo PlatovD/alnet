@@ -15,7 +15,7 @@ public class MessageMapper implements MapperFromEntityToDTO<Message, MessageResp
                 .chatId(entity.getChat().getChatId())
                 .username(entity.getUser().getUsername())
                 .content(entity.getContent())
-                .dateTime(entity.getCreationTime()).build();
+                .dateTime(entity.getDateTime()).build();
     }
 
     @Override

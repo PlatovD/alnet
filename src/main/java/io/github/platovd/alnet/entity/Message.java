@@ -24,7 +24,7 @@ public class Message {
 
     @Column(name = "time")
     @CreationTimestamp
-    private LocalDateTime creationTime;
+    private LocalDateTime dateTime;
 
     @ManyToOne(optional = false, targetEntity = Chat.class)
     private Chat chat;
