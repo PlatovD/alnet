@@ -31,12 +31,12 @@ public class MessageController {
         return messageFacade.getAllMessagesOfChat(chatId, pageable);
     }
 
-    @Operation(description = "Отправка сообщений в определенный чат")
-    @PreAuthorize("@membershipSecurity.isMember(#chatId)")
-    @PostMapping("/{id}")
-    public MessageResponse sendMessageToChat(@PathVariable(name = "id") Long chatId, @Valid @RequestBody MessageRequest request) {
-        return messageFacade.sendMessageToChat(chatId, request);
-    }
+//    @Operation(description = "Отправка сообщений в определенный чат")
+//    @PreAuthorize("@membershipSecurity.isMember(#chatId)")
+//    @PostMapping("/{id}")
+//    public MessageResponse sendMessageToChat(@PathVariable(name = "id") Long chatId, @Valid @RequestBody MessageRequest request) {
+//        return messageFacade.sendMessageToChat(chatId, request);
+//    }
 
     @Operation(description = "Редакция контента сообщения по идентификатору")
     @PreAuthorize("@messageSecurity.isAuthor(#messageId)")

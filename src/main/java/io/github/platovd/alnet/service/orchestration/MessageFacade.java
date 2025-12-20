@@ -5,8 +5,10 @@ import io.github.platovd.alnet.dto.message.response.MessageResponse;
 import io.github.platovd.alnet.entity.Chat;
 import io.github.platovd.alnet.entity.Message;
 import io.github.platovd.alnet.entity.User;
+import io.github.platovd.alnet.exception.authentication.UnauthorizedException;
 import io.github.platovd.alnet.mapper.MessageMapper;
 import io.github.platovd.alnet.service.atomic.ChatService;
+import io.github.platovd.alnet.service.atomic.MembershipService;
 import io.github.platovd.alnet.service.atomic.MessageService;
 import io.github.platovd.alnet.service.atomic.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +19,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
+
 @Service
 @RequiredArgsConstructor
 public class MessageFacade {
     private final MessageService messageService;
+    private final MembershipService membershipService;
     private final MessageMapper messageMapper;
     private final UserService userService;
     private final ChatService chatService;
@@ -31,11 +36,12 @@ public class MessageFacade {
         return messageService.getAllChatMessages(chatId, pageable).map(messageMapper::toDTO);
     }
 
-    @PreAuthorize("@membershipSecurity.isMember(#chatId)")
     @Transactional
-    public MessageResponse sendMessageToChat(Long chatId, MessageRequest messageRequest) {
+    public MessageResponse sendMessageToChat(Long chatId, MessageRequest messageRequest, Principal principal) {
         // todo: вот здесь по идее должны происходить еще и события с websocket
-        User user = userService.getCurrentUser();
+        User user = userService.getByUsername(principal.getName());
+        if (!membershipService.isMemberOfChat(user.getUserId(), chatId))
+            throw new UnauthorizedException("No member of chat");
         Chat chat = chatService.getChatById(chatId);
         Message message = messageService.createMessage(messageRequest.getContent(), user, chat);
         MessageResponse dto = messageMapper.toDTO(message);
