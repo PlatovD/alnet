@@ -9,13 +9,15 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
+
 @Controller
 @RequiredArgsConstructor
 public class WebSocketController {
     private final MessageFacade messageFacade;
 
     @MessageMapping("/chats/{chatId}")
-    public void incomingFromClientsMessageWebsocket(@DestinationVariable Long chatId, @Valid @Payload MessageRequest message) {
-        messageFacade.sendMessageToChat(chatId, message);
+    public void incomingFromClientsMessageWebsocket(@DestinationVariable Long chatId, @Valid @Payload MessageRequest message, Principal principal) {
+        messageFacade.sendMessageToChat(chatId, message, principal);
     }
 }
