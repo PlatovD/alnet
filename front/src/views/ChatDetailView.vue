@@ -290,7 +290,7 @@ const onUpdateChat = async () => {
   updateSuccess.value = '';
   try {
     const {data} = await api.put(`/api/chats/${chatId.value}`, {
-      chatId: null,
+      chatId: chatId.value,
       name: updateChatName.value.trim(),
       members: []
     });

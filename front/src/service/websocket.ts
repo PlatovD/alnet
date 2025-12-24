@@ -18,7 +18,7 @@ class WebSocketService {
 
     connect(token: string, onConnect: () => void, onError: () => void) {
         this.client = new Client({
-            webSocketFactory: () => new SockJS("/ws"),
+            webSocketFactory: () => new SockJS("https://platovd.ru/alnet/ws"),
             connectHeaders: {
                 Authorization: `Bearer ${token}`
             },
