@@ -28,15 +28,48 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
+/**
+ * Фасад для работы с пользователями и аутентификацией.
+ * Координирует работу нескольких сервисов для выполнения операций с пользователями.
+ *
+ * @author PlatovD
+ * @version 1.0
+ */
 @Service
 @RequiredArgsConstructor
 public class UserFacade {
+
+    /**
+     * Сервис для работы с пользователями.
+     */
     private final UserService userService;
+
+    /**
+     * Сервис для работы с JWT токенами.
+     */
     private final JWTService jwtService;
+
+    /**
+     * Менеджер аутентификации.
+     */
     private final AuthenticationManager authenticationManager;
+
+    /**
+     * Обертка для работы с контекстом безопасности.
+     */
     private final SecurityContextWrapper securityContextWrapper;
+
+    /**
+     * Маппер для преобразования пользователей.
+     */
     private final UserMapper userMapper;
 
+    /**
+     * Регистрирует нового пользователя в системе.
+     *
+     * @param signUpRequest запрос с данными для регистрации
+     * @return JWT токены для нового пользователя
+     */
     @Transactional
     public JWTAuthenticationResponse signUp(SignUpRequest signUpRequest) {
         User user = userService.create(signUpRequest.getUsername(), signUpRequest.getEmail(),
@@ -44,6 +77,14 @@ public class UserFacade {
         return new JWTAuthenticationResponse(jwtService.generateJWTAccess(user), jwtService.generateJWTRefresh(user));
     }
 
+    /**
+     * Аутентифицирует пользователя в системе.
+     *
+     * @param signInRequest запрос с данными для аутентификации
+     * @return JWT токены для аутентифицированного пользователя
+     * @throws AlreadyAuthenticatedException если пользователь уже аутентифицирован
+     * @throws AuthenticationException если аутентификация не удалась
+     */
     @Transactional(readOnly = true)
     public JWTAuthenticationResponse signIn(SignInRequest signInRequest) {
         if (securityContextWrapper.isAuthenticated())
@@ -62,6 +103,13 @@ public class UserFacade {
         }
     }
 
+    /**
+     * Обновляет JWT токены с использованием refresh токена.
+     *
+     * @param refreshRequest запрос с refresh токеном
+     * @return новые JWT токены
+     * @throws InvalidRefreshTokenException если refresh токен невалиден
+     */
     @Transactional(readOnly = true)
     public JWTAuthenticationResponse refresh(RefreshRequest refreshRequest) {
         var token = refreshRequest.getRefresh();
@@ -73,6 +121,13 @@ public class UserFacade {
         return new JWTAuthenticationResponse(jwtService.generateJWTAccess(user), jwtService.generateJWTRefresh(user));
     }
 
+    /**
+     * Получает данные пользователя.
+     * Скрывает email если запрашиваемый пользователь не является текущим аутентифицированным пользователем.
+     *
+     * @param userId идентификатор пользователя
+     * @return данные пользователя
+     */
     @Transactional(readOnly = true)
     public UserDTO getUser(Long userId) {
         User user = userService.getById(userId);
@@ -82,6 +137,14 @@ public class UserFacade {
         return response;
     }
 
+    /**
+     * Полностью обновляет данные пользователя.
+     *
+     * @param userId идентификатор пользователя из URL
+     * @param putRequest новые данные пользователя
+     * @return обновленные данные пользователя
+     * @throws WrongDataException если идентификатор в URL не совпадает с идентификатором в запросе
+     */
     @Transactional
     public UserDTO updateFullUser(Long userId, UserDTO putRequest) {
         if (!Objects.equals(userId, putRequest.getUserId()))
@@ -92,12 +155,26 @@ public class UserFacade {
         return userMapper.toDTO(updatedUser);
     }
 
+    /**
+     * Частично обновляет данные пользователя с использованием JSON Patch.
+     *
+     * @param userId идентификатор пользователя
+     * @param jsonPatch JSON Patch с операциями
+     * @return обновленные данные пользователя
+     * @throws JsonPatchException если возникает ошибка при применении патча
+     * @throws JsonProcessingException если возникает ошибка при обработке JSON
+     */
     public UserDTO patchUserById(Long userId, JsonPatch jsonPatch) throws JsonPatchException, JsonProcessingException {
         User user = userService.getById(userId);
         User patchedUser = userService.applyPatchToUser(jsonPatch, user);
         return userMapper.toDTO(patchedUser);
     }
 
+    /**
+     * Удаляет пользователя.
+     *
+     * @param userId идентификатор пользователя
+     */
     public void deleteUser(Long userId) {
         userService.unAuthenticate();
         userService.deleteUserById(userId);

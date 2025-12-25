@@ -7,8 +7,22 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
+/**
+ * Маппер для преобразования сущности Chat в ChatDTO и обратно.
+ * Реализует интерфейс MapperFromEntityToDTO для работы с чатами.
+ *
+ * @author PlatovD
+ * @version 1.0
+ */
 @Component
 public class ChatMapper implements MapperFromEntityToDTO<Chat, ChatDTO> {
+
+    /**
+     * Преобразует сущность Chat в ChatDTO.
+     *
+     * @param entity сущность Chat для преобразования
+     * @return объект ChatDTO с данными из сущности
+     */
     @Override
     public ChatDTO toDTO(Chat entity) {
         ChatDTO.ChatDTOBuilder builder = ChatDTO.builder()
@@ -18,6 +32,12 @@ public class ChatMapper implements MapperFromEntityToDTO<Chat, ChatDTO> {
         return builder.build();
     }
 
+    /**
+     * Преобразует коллекцию сущностей Chat в коллекцию ChatDTO.
+     *
+     * @param entities коллекция сущностей Chat для преобразования
+     * @return коллекция объектов ChatDTO
+     */
     @Override
     public Collection<ChatDTO> allToDTO(Collection<Chat> entities) {
         return entities.stream().map(this::toDTO).toList();

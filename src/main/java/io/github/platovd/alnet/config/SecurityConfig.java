@@ -23,20 +23,53 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
+/**
+ * Основной класс конфигурации безопасности приложения.
+ * Настраивает аутентификацию, авторизацию и фильтры безопасности для REST API.
+ *
+ * @author PlatovD
+ * @version 1.0
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    /**
+     * Пользовательский сервис для загрузки данных пользователей.
+     */
     private final CustomUserDetailService customUserDetailService;
+
+    /**
+     * Провайдер аутентификации для JWT токенов.
+     */
     private final JWTAuthenticationProvider jwtAuthenticationProvider;
+
+    /**
+     * Обертка для работы с контекстом безопасности.
+     */
     private final SecurityContextWrapper securityContextWrapper;
 
+    /**
+     * Создает и настраивает кодировщик паролей.
+     * Использует алгоритм BCrypt для хеширования паролей.
+     *
+     * @return настроенный кодировщик паролей
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Создает и настраивает фильтр для JWT аутентификации.
+     *
+     * @param authenticationManager менеджер аутентификации
+     * @param entryPoint точка входа для обработки ошибок аутентификации
+     * @return настроенный фильтр JWT аутентификации
+     * @throws Exception если возникает ошибка при создании фильтра
+     */
     @Bean
     public JWTAuthenticationFilter jwtAuthenticationFilter(AuthenticationManager authenticationManager, AuthenticationEntryPoint entryPoint) throws Exception {
         return JWTAuthenticationFilter.builder()
@@ -46,6 +79,13 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Создает и настраивает менеджер аутентификации.
+     *
+     * @param http объект HttpSecurity для настройки
+     * @return настроенный менеджер аутентификации
+     * @throws Exception если возникает ошибка при создании менеджера
+     */
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -55,6 +95,16 @@ public class SecurityConfig {
         return builder.build();
     }
 
+    /**
+     * Создает и настраивает цепочку фильтров безопасности.
+     *
+     * @param http объект HttpSecurity для настройки
+     * @param filter фильтр JWT аутентификации
+     * @param accessDeniedEP обработчик ошибок доступа
+     * @param unauthenticatedEP обработчик ошибок аутентификации
+     * @return настроенную цепочку фильтров безопасности
+     * @throws Exception если возникает ошибка при создании цепочки
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,

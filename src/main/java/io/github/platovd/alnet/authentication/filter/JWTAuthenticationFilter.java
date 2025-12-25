@@ -25,18 +25,54 @@ import java.io.IOException;
  * предоставляемую Spring(ом), перед стандартным BasicAuthenticationFilter. Если запрос содержит аутентификацию
  * через JWT, то фильтр попробует ее произвести, иначе продолжит цепочку фильтров. Так, например, при
  * входе через username + password, будет использован именно BasicAuthenticationFilter
+ *
+ * @author PlatovD
+ * @version 1.0
  */
 @Builder
 @RequiredArgsConstructor
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
+
+    /**
+     * Префикс для Bearer токена в заголовке Authorization.
+     */
     public static final String BEARER_PREFIX = "Bearer ";
+
+    /**
+     * Имя HTTP-заголовка, содержащего токен аутентификации.
+     */
     public static final String HEADER_NAME = "Authorization";
+
+    /**
+     * Обертка для работы с контекстом безопасности.
+     */
     private final SecurityContextWrapper securityContextWrapper;
+
+    /**
+     * Менеджер аутентификации для проверки JWT токенов.
+     */
     private final AuthenticationManager authManager;
+
+    /**
+     * Точка входа для обработки ошибок аутентификации.
+     */
     private final AuthenticationEntryPoint authenticationEntryPoint;
+
+    /**
+     * Флаг, указывающий игнорировать ли ошибки аутентификации и продолжать цепочку фильтров.
+     */
     private final boolean ignoreFailure = false;
 
-
+    /**
+     * Основной метод фильтрации запросов.
+     * Обрабатывает JWT аутентификацию для каждого HTTP-запроса.
+     *
+     * @param request HTTP-запрос
+     * @param response HTTP-ответ
+     * @param filterChain цепочка фильтров
+     * @throws ServletException если возникает ошибка сервлета
+     * @throws IOException если возникает ошибка ввода-вывода
+     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         // оборачиваю, чтобы поймать ошибки аутентификации
@@ -73,19 +109,48 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         doFilter(request, response, filterChain);
     }
 
+    /**
+     * Проверяет, аутентифицирован ли текущий пользователь.
+     *
+     * @return true если пользователь аутентифицирован, иначе false
+     */
     protected boolean isAuthenticated() {
         return securityContextWrapper.isAuthenticated();
     }
 
+    /**
+     * Проверяет наличие Bearer токена в заголовке Authorization запроса.
+     *
+     * @param request HTTP-запрос для проверки
+     * @return true если заголовок Authorization содержит Bearer токен, иначе false
+     */
     protected boolean checkBearer(@NonNull HttpServletRequest request) {
         String header = request.getHeader(HEADER_NAME);
         return !StringUtils.isEmpty(header) && header.startsWith(BEARER_PREFIX);
     }
 
+    /**
+     * Вызывается при успешной аутентификации.
+     * Может быть переопределен для добавления дополнительной логики.
+     *
+     * @param request HTTP-запрос
+     * @param response HTTP-ответ
+     * @param authResult результат успешной аутентификации
+     * @throws IOException если возникает ошибка ввода-вывода
+     */
     protected void onSuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication
             authResult) throws IOException {
     }
 
+    /**
+     * Вызывается при неудачной аутентификации.
+     * Может быть переопределен для добавления дополнительной логики.
+     *
+     * @param request HTTP-запрос
+     * @param response HTTP-ответ
+     * @param failed исключение аутентификации
+     * @throws IOException если возникает ошибка ввода-вывода
+     */
     protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException
             failed) throws IOException {
     }

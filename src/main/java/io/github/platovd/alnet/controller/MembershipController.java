@@ -18,20 +18,47 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Контроллер для управления членством пользователей в чатах.
+ * Предоставляет endpoints для работы с участниками чатов.
+ *
+ * @author PlatovD
+ * @version 1.0
+ */
 @RestController
 @RequestMapping("/api/membership")
 @RequiredArgsConstructor
 @Tag(name = "Управление членством в чатах")
 public class MembershipController {
+
+    /**
+     * Сервис для работы с членством в чатах.
+     */
     private final MembershipService membershipService;
+
+    /**
+     * Фасад для работы с чатами.
+     */
     private final ChatFacade chatFacade;
 
+    /**
+     * Получает список чатов текущего пользователя.
+     *
+     * @return список чатов пользователя
+     */
     @Operation(description = "Получить список чатов пользователя")
     @GetMapping
     public UserChatsMembershipResponse getChatsList() {
         return chatFacade.getChatsListForCurrentUser();
     }
 
+    /**
+     * Получает всех участников указанного чата.
+     * Требуется членство в чате.
+     *
+     * @param chatId идентификатор чата
+     * @return список участников чата
+     */
     @PreAuthorize("@membershipSecurity.isMember(#chatId)")
     @Operation(description = "Получить всех членов чата")
     @GetMapping("/{id}")
@@ -40,6 +67,14 @@ public class MembershipController {
         return new ChatMembersResponse(chatId, members.stream().map(UserMembershipResponse::new).toList());
     }
 
+    /**
+     * Добавляет пользователей в указанный чат.
+     * Требуется членство в чате.
+     *
+     * @param chatId идентификатор чата
+     * @param request запрос с идентификаторами пользователей для добавления
+     * @return обновленный список участников чата
+     */
     @PreAuthorize("@membershipSecurity.isMember(#chatId)")
     @Operation(description = "Добавить пользователей в чат")
     @PostMapping("/{id}")
@@ -47,8 +82,16 @@ public class MembershipController {
         return chatFacade.addAllUsersToChat(chatId, request);
     }
 
+    /**
+     * Удаляет пользователей из указанного чата.
+     * Требуется членство в чате.
+     *
+     * @param chatId идентификатор чата
+     * @param request запрос с идентификаторами пользователей для удаления
+     * @return ответ с HTTP статусом 204 No Content
+     */
     @PreAuthorize("@membershipSecurity.isMember(#chatId)")
-    @Operation(description = "Удалить пользователй из чата")
+    @Operation(description = "Удалить пользователей из чата")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMembersOfChat(@PathVariable(name = "id") Long chatId, @Valid @RequestBody MembershipOperationRequest request) {
         chatFacade.deleteMembersOfChat(chatId, request);

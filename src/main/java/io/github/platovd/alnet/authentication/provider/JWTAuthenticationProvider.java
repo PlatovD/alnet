@@ -24,14 +24,37 @@ import java.util.Optional;
  * коллекцию Authentication провайдеров, и для тех объектов Authentication, для которых этот провайдер подойдет,
  * он будет вызван. Если этот провайдер не сможет произвести аутентификацию - он выбросит AuthenticationException,
  * иначе - вернет объект Authentication, который будет уже иметь isAuthenticated() = true.
+ *
+ * @author PlatovD
+ * @version 1.0
  */
 @Component
 @RequiredArgsConstructor
 public class JWTAuthenticationProvider implements AuthenticationProvider {
+
+    /**
+     * Сервис для работы с JWT токенами.
+     */
     private final JWTService jwtService;
+
+    /**
+     * Репозиторий для доступа к данным пользователей.
+     */
     private final UserRepository userRepository;
+
+    /**
+     * Требуемый тип токена для аутентификации.
+     */
     private final String REQUIRED_TOKEN_TYPE = "access";
 
+    /**
+     * Аутентифицирует пользователя на основе JWT токена.
+     * Проверяет валидность токена, извлекает информацию о пользователе и создает аутентифицированный объект.
+     *
+     * @param authentication объект аутентификации для обработки
+     * @return аутентифицированный объект JWTAuthToken
+     * @throws AuthenticationException если аутентификация не удалась
+     */
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         // смотрим, передали ли нам поддерживаемую Authentication
@@ -72,6 +95,13 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
+    /**
+     * Проверяет, поддерживает ли данный провайдер указанный класс аутентификации.
+     *
+     * @param authentication класс для проверки поддержки
+     * @return true если провайдер поддерживает JWTAuthToken, иначе false
+     * @throws AuthenticationException если возникает ошибка при проверке поддержки
+     */
     @Override
     public boolean supports(Class<?> authentication) throws AuthenticationException {
         return JWTAuthToken.class.isAssignableFrom(authentication);

@@ -11,11 +11,28 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.security.Principal;
 
+/**
+ * Компонент для обработки событий WebSocket.
+ * Отслеживает подключение и отключение пользователей через WebSocket и обновляет их статусы.
+ *
+ * @author PlatovD
+ * @version 1.0
+ */
 @Component
 @RequiredArgsConstructor
 public class WebSocketEventListener {
+
+    /**
+     * Сервис для работы с пользователями.
+     */
     private final UserService userService;
 
+    /**
+     * Обрабатывает событие подключения пользователя через WebSocket.
+     * Устанавливает статус пользователя в ONLINE.
+     *
+     * @param event событие подключения WebSocket сессии
+     */
     @EventListener
     public void handleWebSocketConnected(SessionConnectedEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -24,6 +41,12 @@ public class WebSocketEventListener {
         userService.changeUserStatus(UserStatus.ONLINE, principal.getName());
     }
 
+    /**
+     * Обрабатывает событие отключения пользователя через WebSocket.
+     * Устанавливает статус пользователя в OFFLINE.
+     *
+     * @param event событие отключения WebSocket сессии
+     */
     @EventListener
     public void handleWebSocketDisconnected(SessionDisconnectEvent event) {
         Principal principal = event.getUser();

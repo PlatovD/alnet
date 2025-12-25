@@ -29,16 +29,44 @@ import java.util.List;
 
 import static io.github.platovd.alnet.authentication.filter.JWTAuthenticationFilter.*;
 
+/**
+ * Класс конфигурации WebSocket для поддержки real-time обмена сообщениями.
+ * Настраивает STOMP протокол и JWT аутентификацию для WebSocket соединений.
+ *
+ * @author PlatovD
+ * @version 1.0
+ */
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    /**
+     * Порт frontend приложения для настройки CORS.
+     */
     @Value("${frontend.port}")
     private String port;
+
+    /**
+     * Объект для преобразования JSON.
+     */
     private final ObjectMapper mapper;
+
+    /**
+     * Менеджер аутентификации для проверки JWT токенов.
+     */
     private final AuthenticationManager authManager;
+
+    /**
+     * Обертка для работы с контекстом безопасности.
+     */
     private final SecurityContextWrapper securityContextWrapper;
 
+    /**
+     * Настраивает брокер сообщений для WebSocket.
+     *
+     * @param registry реестр для настройки брокера сообщений
+     */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // куда будет сервер слать данные по подпискам через STOMP. todo: RabbitMQ
@@ -46,6 +74,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setApplicationDestinationPrefixes("/app");
     }
 
+    /**
+     * Настраивает конвертеры сообщений для преобразования JSON.
+     *
+     * @param messageConverters список конвертеров сообщений
+     * @return false, что означает, что стандартные конвертеры также должны быть добавлены
+     */
     @Override
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
         DefaultContentTypeResolver contentTypeResolver = new DefaultContentTypeResolver();
@@ -58,6 +92,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return false;
     }
 
+    /**
+     * Регистрирует конечные точки WebSocket.
+     *
+     * @param registry реестр конечных точек STOMP
+     */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
@@ -66,9 +105,21 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
     }
 
+    /**
+     * Настраивает входящий канал клиента с JWT аутентификацией.
+     *
+     * @param registration регистрация для настройки канала
+     */
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
+            /**
+             * Перехватывает сообщения перед отправкой для проверки JWT аутентификации.
+             *
+             * @param message сообщение для отправки
+             * @param channel канал для отправки сообщения
+             * @return обработанное сообщение
+             */
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);

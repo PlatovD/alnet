@@ -11,11 +11,29 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 
+/**
+ * Контроллер для обработки WebSocket сообщений.
+ * Обрабатывает real-time сообщения, отправляемые через WebSocket соединения.
+ *
+ * @author PlatovD
+ * @version 1.0
+ */
 @Controller
 @RequiredArgsConstructor
 public class WebSocketController {
+
+    /**
+     * Фасад для работы с сообщениями.
+     */
     private final MessageFacade messageFacade;
 
+    /**
+     * Обрабатывает входящие сообщения от клиентов через WebSocket.
+     *
+     * @param chatId идентификатор чата, в который отправляется сообщение
+     * @param message данные сообщения
+     * @param principal объект с информацией об аутентифицированном пользователе
+     */
     @MessageMapping("/chats/{chatId}")
     public void incomingFromClientsMessageWebsocket(@DestinationVariable Long chatId, @Valid @Payload MessageRequest message, Principal principal) {
         messageFacade.sendMessageToChat(chatId, message, principal);
