@@ -1,5 +1,6 @@
 package io.github.platovd.alnet.entity;
 
+import io.github.platovd.alnet.entity.util.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,10 @@ public class User {
 
     @Column(name = "email", unique = true)
     private String email;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private UserStatus status = UserStatus.OFFLINE;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

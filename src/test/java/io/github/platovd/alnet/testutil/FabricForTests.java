@@ -11,10 +11,10 @@ import io.github.platovd.alnet.entity.Chat;
 import io.github.platovd.alnet.entity.Membership;
 import io.github.platovd.alnet.entity.Role;
 import io.github.platovd.alnet.entity.User;
+import io.github.platovd.alnet.entity.util.UserStatus;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Date;
 import java.util.List;
@@ -35,18 +35,14 @@ public class FabricForTests {
     public static final Long CHAT_ID = 10L;
     public static final String CHAT_NAME = "Test Chat";
     public static final String UPDATED_CHAT_NAME = "Updated Chat Name";
-    public static final String ACCESS_TOKEN_TYPE = "access";
-    public static final String REFRESH_TOKEN_TYPE = "refresh";
-    public static final String INVALID_TOKEN_TYPE = "invalid";
     public static final Long CHAT_ID_2 = 20L;
     public static final String CHAT_NAME_2 = "Another Chat";
     public static final String NEW_USERNAME = "NewUser";
     public static final String NEW_EMAIL = "new@gmail.com";
-    public static final String NEW_PASSWORD = "newpassword123";
 
 
     public static User testUser() {
-        return User.builder().userId(USER_ID).email(EMAIL).username(USERNAME).password(PASSWORD).role(
+        return User.builder().userId(USER_ID).email(EMAIL).username(USERNAME).password(PASSWORD).status(UserStatus.ONLINE).role(
                 List.of(Role.builder().name(ROLE).build())).build();
     }
 
@@ -167,6 +163,7 @@ public class FabricForTests {
                 .userId(USER_ID + 1)
                 .email("another@gmail.com")
                 .username("AnotherUser")
+                .status(UserStatus.ONLINE)
                 .password(PASSWORD)
                 .role(List.of(Role.builder().name(ROLE).build()))
                 .build();

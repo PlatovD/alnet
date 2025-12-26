@@ -25,10 +25,10 @@
             <li v-for="member in members" :key="member.username" class="member-item">
               <span class="member-username">{{ member.username }}</span>
               <button
-                v-if="member.username !== currentUsername"
-                @click="onDeleteMember(member.username)"
-                class="delete-member-button"
-                :disabled="deletingMember"
+                  v-if="member.username !== currentUsername"
+                  @click="onDeleteMember(member.username)"
+                  class="delete-member-button"
+                  :disabled="deletingMember"
               >
                 Remove
               </button>
@@ -44,10 +44,10 @@
           <h4>Update Chat Name</h4>
           <form @submit.prevent="onUpdateChat" class="update-form">
             <input
-              v-model="updateChatName"
-              :placeholder="chatName || 'Chat name'"
-              maxlength="30"
-              required
+                v-model="updateChatName"
+                :placeholder="chatName || 'Chat name'"
+                maxlength="30"
+                required
             />
             <button type="submit" :disabled="updatingChat">
               {{ updatingChat ? 'Updating...' : 'Update' }}
@@ -62,9 +62,9 @@
           <h4>Danger Zone</h4>
           <p class="danger-text">Deleting a chat cannot be undone. All messages will be lost.</p>
           <button
-            class="delete-button"
-            @click="confirmDelete = true"
-            :disabled="deletingChat"
+              class="delete-button"
+              @click="confirmDelete = true"
+              :disabled="deletingChat"
           >
             Delete Chat
           </button>
@@ -90,10 +90,10 @@
       <div v-else-if="messages.length === 0" class="empty">No messages yet. Start the conversation!</div>
       <div v-else class="messages-list">
         <div
-          v-for="msg in messages"
-          :key="msg.id"
-          class="message-item"
-          :class="{ 'own-message': msg.username === currentUsername }"
+            v-for="msg in messages"
+            :key="msg.id"
+            class="message-item"
+            :class="{ 'own-message': msg.username === currentUsername }"
         >
           <div class="message-header">
             <span class="message-username">{{ msg.username }}</span>
@@ -108,11 +108,11 @@
       <form @submit.prevent="onSendMessage">
         <label>
           <textarea
-            v-model="messageContent"
-            placeholder="Type your message..."
-            rows="3"
-            maxlength="5000"
-            required
+              v-model="messageContent"
+              placeholder="Type your message..."
+              rows="3"
+              maxlength="5000"
+              required
           ></textarea>
         </label>
         <button type="submit" :disabled="sendingMessage">
@@ -125,19 +125,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter, RouterLink } from 'vue-router';
-import { storeToRefs } from 'pinia';
+import {onMounted, onUnmounted, ref, watch} from 'vue';
+import {useRoute, useRouter, RouterLink} from 'vue-router';
+import {storeToRefs} from 'pinia';
 import api from '../api/client';
-import { useAuthStore } from '../stores/auth';
+import {useAuthStore} from '../stores/auth';
+import {MessageResponse} from "../service/websocket";
+import websocket from "../service/websocket";
+import {Message} from '@stomp/stompjs';
 
-interface MessageResponse {
-  id: number;
-  content: string;
-  dateTime: string;
-  username: string;
-  chatId: number;
-}
 
 interface SliceResponse {
   content: MessageResponse[];
@@ -150,7 +146,7 @@ interface SliceResponse {
 
 const route = useRoute();
 const authStore = useAuthStore();
-const { username: currentUsername } = storeToRefs(authStore);
+const {username: currentUsername} = storeToRefs(authStore);
 const router = useRouter();
 
 const chatId = ref<number>(Number(route.params.chatId));
@@ -180,6 +176,25 @@ const deletingMember = ref(false);
 const deleteMemberError = ref('');
 const deleteMemberSuccess = ref('');
 
+const connectWebSocket = () => {
+  if (!authStore.accessToken) return;
+  websocket.connect(authStore.accessToken, onConnectWebsocket, onWebsocketError);
+}
+
+const onWebsocketError = () => {
+  console.error('Ошибка WebSocket!');
+};
+
+const onConnectWebsocket = () => {
+  websocket.subscribe(`/topic/chats/${chatId.value}`, onReceiveMessage)
+}
+
+const onSendMessage = () => {
+  if (!messageContent.value.trim()) return;
+  websocket.sendMessage(`/app/chats/${chatId.value}`, messageContent.value);
+  messageContent.value = '';
+}
+
 const formatDateTime = (dateTimeStr: string): string => {
   if (!dateTimeStr) return '';
   try {
@@ -195,7 +210,7 @@ const formatDateTime = (dateTimeStr: string): string => {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
 
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
   } catch {
     return dateTimeStr;
   }
@@ -205,7 +220,7 @@ const loadMessages = async () => {
   loadingMessages.value = true;
   messagesError.value = '';
   try {
-    const { data } = await api.get<SliceResponse>(`/api/message/${chatId.value}`, {
+    const {data} = await api.get<SliceResponse>(`/api/message/${chatId.value}`, {
       params: {
         size: 100,
         sort: 'dateTime,desc'
@@ -216,48 +231,29 @@ const loadMessages = async () => {
   } catch (e: any) {
     console.error(e);
     messagesError.value = e?.response?.status === 403
-      ? 'You are not a member of this chat.'
-      : 'Failed to load messages.';
+        ? 'You are not a member of this chat.'
+        : 'Failed to load messages.';
   } finally {
     loadingMessages.value = false;
   }
 };
 
-const onSendMessage = async () => {
-  if (!messageContent.value.trim()) return;
-
-  sendingMessage.value = true;
-  sendError.value = '';
-  try {
-    const { data } = await api.post<MessageResponse>(`/api/message/${chatId.value}`, {
-      content: messageContent.value.trim()
-    });
-
-    // Add the new message to the list
-    messages.value.push(data);
-    messageContent.value = '';
-    
-    // Scroll to bottom
-    setTimeout(() => {
-      const container = document.querySelector('.messages-list');
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }, 100);
-  } catch (e: any) {
-    console.error(e);
-    sendError.value = e?.response?.status === 403
-      ? 'You are not a member of this chat.'
-      : 'Failed to send message.';
-  } finally {
-    sendingMessage.value = false;
-  }
+const onReceiveMessage = (message: Message) => {
+  const data: MessageResponse = JSON.parse(message.body);
+  messages.value.push(data);
+  setTimeout(() => {
+    const container = document.querySelector('.messages-list');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, 100);
 };
+
 
 // Load chat name from chats list
 const loadChatName = async () => {
   try {
-    const { data } = await api.get('/api/membership');
+    const {data} = await api.get('/api/membership');
     const chat = (data.chats || []).find((c: any) => c.chatId === chatId.value);
     if (chat) {
       chatName.value = chat.name || '';
@@ -273,13 +269,13 @@ const loadMembers = async () => {
   loadingMembers.value = true;
   membersError.value = '';
   try {
-    const { data } = await api.get(`/api/membership/${chatId.value}`);
+    const {data} = await api.get(`/api/membership/${chatId.value}`);
     members.value = data.members || [];
   } catch (e: any) {
     console.error(e);
     membersError.value = e?.response?.status === 403
-      ? 'You are not a member of this chat.'
-      : 'Failed to load members.';
+        ? 'You are not a member of this chat.'
+        : 'Failed to load members.';
   } finally {
     loadingMembers.value = false;
   }
@@ -293,8 +289,8 @@ const onUpdateChat = async () => {
   updateError.value = '';
   updateSuccess.value = '';
   try {
-    const { data } = await api.put(`/api/chats/${chatId.value}`, {
-      chatId: null,
+    const {data} = await api.put(`/api/chats/${chatId.value}`, {
+      chatId: chatId.value,
       name: updateChatName.value.trim(),
       members: []
     });
@@ -306,8 +302,8 @@ const onUpdateChat = async () => {
   } catch (e: any) {
     console.error(e);
     updateError.value = e?.response?.status === 403
-      ? 'You are not a member of this chat.'
-      : 'Failed to update chat name.';
+        ? 'You are not a member of this chat.'
+        : 'Failed to update chat name.';
   } finally {
     updatingChat.value = false;
   }
@@ -323,8 +319,8 @@ const onDeleteChat = async () => {
   } catch (e: any) {
     console.error(e);
     deleteError.value = e?.response?.status === 403
-      ? 'You are not a member of this chat.'
-      : 'Failed to delete chat.';
+        ? 'You are not a member of this chat.'
+        : 'Failed to delete chat.';
     deletingChat.value = false;
   }
 };
@@ -351,8 +347,8 @@ const onDeleteMember = async (username: string) => {
   } catch (e: any) {
     console.error(e);
     deleteMemberError.value = e?.response?.status === 403
-      ? 'You are not a member of this chat.'
-      : 'Failed to remove member.';
+        ? 'You are not a member of this chat.'
+        : 'Failed to remove member.';
   } finally {
     deletingMember.value = false;
   }
@@ -377,6 +373,11 @@ watch(() => route.params.chatId, (newId) => {
 onMounted(() => {
   loadMessages();
   loadChatName();
+  connectWebSocket();
+});
+
+onUnmounted(() => {
+  websocket.disconnect();
 });
 </script>
 

@@ -8,6 +8,7 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
+import io.github.platovd.alnet.entity.util.UserStatus;
 import io.github.platovd.alnet.exception.user.*;
 import io.github.platovd.alnet.mapper.UserMapper;
 import io.github.platovd.alnet.repository.UserRepository;
@@ -43,7 +44,8 @@ public class UserService {
             throw new EmailUsedException("Email is already in use");
         }
         String encodedPassword = passwordEncoder.encode(password);
-        User user = User.builder().username(username).email(email).password(encodedPassword).build();
+        User user = User.builder().username(username).email(email).password(encodedPassword).status(UserStatus.OFFLINE)
+                .build();
         return repository.save(user);
     }
 
@@ -82,6 +84,7 @@ public class UserService {
 
         patchedUser.setUserId(targetUser.getUserId());
         patchedUser.setPassword(targetUser.getPassword());
+        patchedUser.setStatus(targetUser.getStatus());
 
         if (!patchedUser.getUsername().equals(targetUser.getUsername()))
             if (repository.existsByUsername(patchedUser.getUsername()))
@@ -147,5 +150,12 @@ public class UserService {
 
     public void unAuthenticate() {
         securityContextWrapper.unAuthenticate();
+    }
+
+    @Transactional
+    public void changeUserStatus(UserStatus newUserStatus, String username) {
+        User user = getByUsername(username);
+        user.setStatus(newUserStatus);
+        repository.save(user);
     }
 }

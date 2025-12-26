@@ -1,5 +1,6 @@
 package io.github.platovd.alnet.dto.user;
 
+import io.github.platovd.alnet.entity.util.UserStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class UserDTO {
     private Long userId;
     @Size(min = 3)
     private String username;
+    private UserStatus userStatus;
     @Email
     private String email;
 }
