@@ -12,6 +12,24 @@ services:
     depends_on:
       - spring_alnet
 
+  rabbitmq_alnet:
+    image: rabbitmq:4.2-alpine
+    container_name: rabbitmq_alnet
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - app
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_NODE_PORT=${RABBITMQ_NODE_PORT}
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+    expose:
+      - 5672
+
   nginx_alnet:
     image: nginx:1.25-alpine
     container_name: nginx_alnet
@@ -64,3 +82,4 @@ networks:
 
 volumes:
   mysql_data:
+  rabbitmq:
