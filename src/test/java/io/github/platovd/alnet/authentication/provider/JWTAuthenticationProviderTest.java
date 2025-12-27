@@ -2,7 +2,7 @@ package io.github.platovd.alnet.authentication.provider;
 
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.user.UserServiceException;
+import io.github.platovd.alnet.exception.entity.user.UserException;
 import io.github.platovd.alnet.service.atomic.JWTService;
 import io.github.platovd.alnet.service.atomic.UserService;
 import io.github.platovd.alnet.testutil.FabricForTests;
@@ -70,7 +70,7 @@ public class JWTAuthenticationProviderTest {
     @Test
     public void invalidJWTUserTest() {
         when(jwtService.extractId(FabricForTests.JWT)).thenReturn(FabricForTests.USER_ID);
-        when(userService.getById(FabricForTests.USER_ID)).thenThrow(UserServiceException.class);
+        when(userService.getById(FabricForTests.USER_ID)).thenThrow(UserException.class);
         assertThatThrownBy(() -> authenticationProvider.authenticate(jwtAuthToken))
                 .isInstanceOf(AuthenticationException.class);
         assertThat(jwtAuthToken.isAuthenticated()).isFalse();

@@ -8,13 +8,12 @@ import io.github.platovd.alnet.dto.membership.response.UserMembershipResponse;
 import io.github.platovd.alnet.entity.Chat;
 import io.github.platovd.alnet.entity.Membership;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.base.WrongDataException;
+import io.github.platovd.alnet.exception.general.WrongDataException;
 import io.github.platovd.alnet.mapper.ChatMapper;
 import io.github.platovd.alnet.service.atomic.ChatService;
 import io.github.platovd.alnet.service.atomic.MembershipService;
 import io.github.platovd.alnet.service.atomic.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

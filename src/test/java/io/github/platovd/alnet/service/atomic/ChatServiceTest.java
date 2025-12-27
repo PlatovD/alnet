@@ -2,8 +2,8 @@ package io.github.platovd.alnet.service.atomic;
 
 import io.github.platovd.alnet.dto.chat.request.ChatCreationOrUpdateRequest;
 import io.github.platovd.alnet.entity.Chat;
-import io.github.platovd.alnet.exception.base.WrongDataException;
-import io.github.platovd.alnet.exception.chat.ChatNotFoundException;
+import io.github.platovd.alnet.exception.entity.chat.ChatException;
+import io.github.platovd.alnet.exception.entity.chat.ChatNotFoundException;
 import io.github.platovd.alnet.repository.ChatRepository;
 import io.github.platovd.alnet.testutil.FabricForTests;
 import org.junit.jupiter.api.Test;
@@ -124,7 +124,7 @@ class ChatServiceTest {
 
         // when & then
         assertThatThrownBy(() -> chatService.updateChat(FabricForTests.CHAT_ID, request))
-                .isInstanceOf(WrongDataException.class)
+                .isInstanceOf(ChatException.class)
                 .hasMessage("DTO and url data isn't the same");
 
         verify(repository, never()).findById(anyLong());
