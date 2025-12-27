@@ -2,7 +2,7 @@ package io.github.platovd.alnet.authentication.filter;
 
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
-import io.github.platovd.alnet.exception.authentication.InvalidAccessTokenException;
+import io.github.platovd.alnet.exception.entity.authentication.InvalidAccessTokenException;
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

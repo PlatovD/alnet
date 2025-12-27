@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.exception.authentication;
+package io.github.platovd.alnet.exception.entity.authentication;
 
 import io.jsonwebtoken.JwtException;
 

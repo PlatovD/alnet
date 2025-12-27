@@ -5,7 +5,7 @@ import io.github.platovd.alnet.dto.message.response.MessageResponse;
 import io.github.platovd.alnet.entity.Chat;
 import io.github.platovd.alnet.entity.Message;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.authentication.UnauthorizedException;
+import io.github.platovd.alnet.exception.entity.authentication.UnauthorizedException;
 import io.github.platovd.alnet.mapper.MessageMapper;
 import io.github.platovd.alnet.service.atomic.ChatService;
 import io.github.platovd.alnet.service.atomic.MembershipService;
@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

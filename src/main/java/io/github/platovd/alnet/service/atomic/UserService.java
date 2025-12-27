@@ -9,8 +9,7 @@ import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.entity.util.UserStatus;
-import io.github.platovd.alnet.exception.user.*;
-import io.github.platovd.alnet.mapper.UserMapper;
+import io.github.platovd.alnet.exception.entity.user.*;
 import io.github.platovd.alnet.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -104,7 +102,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User getCurrentUser() {
         if (!securityContextWrapper.isAuthenticated())
-            throw new UserServiceException("No authentication found. Current authentication is " +
+            throw new UserException("No authentication found. Current authentication is " +
                     securityContextWrapper.getAuthentication());
         Authentication authentication = securityContextWrapper.getAuthentication();
         if (authentication instanceof JWTAuthToken jwtAuthToken) {
@@ -138,11 +136,11 @@ public class UserService {
      * Создан для того, чтобы не делать лишние запросы к бд
      *
      * @return String username
-     * @throws UserServiceException no auth exception
+     * @throws UserException no auth exception
      */
     public String getCurrentUserName() {
         if (!securityContextWrapper.isAuthenticated())
-            throw new UserServiceException("No authentication found. Current authentication is " +
+            throw new UserException("No authentication found. Current authentication is " +
                     securityContextWrapper.getAuthentication());
         return securityContextWrapper.getAuthenticatedUserInfo(UserDetails::getUsername);
     }

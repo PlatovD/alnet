@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
-import io.github.platovd.alnet.exception.user.*;
+import io.github.platovd.alnet.exception.entity.user.*;
 import io.github.platovd.alnet.repository.UserRepository;
 import io.github.platovd.alnet.testutil.FabricForTests;
 import org.junit.jupiter.api.Test;
@@ -268,7 +268,7 @@ class UserServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userService.getCurrentUser())
-                .isInstanceOf(UserServiceException.class)
+                .isInstanceOf(UserException.class)
                 .hasMessageContaining("No authentication found");
     }
 
@@ -331,7 +331,7 @@ class UserServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userService.getCurrentUserName())
-                .isInstanceOf(UserServiceException.class)
+                .isInstanceOf(UserException.class)
                 .hasMessageContaining("No authentication found");
     }
 
