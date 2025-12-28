@@ -11,6 +11,7 @@ import io.github.platovd.alnet.service.atomic.ChatService;
 import io.github.platovd.alnet.service.atomic.MembershipService;
 import io.github.platovd.alnet.service.atomic.MessageService;
 import io.github.platovd.alnet.service.atomic.UserService;
+import io.github.platovd.alnet.wrapper.RabbitMQTemplateWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -29,22 +30,23 @@ public class MessageFacade {
     private final UserService userService;
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RabbitMQTemplateWrapper rabbitMQProducer;
 
     @Transactional(readOnly = true)
+
     public Slice<MessageResponse> getAllMessagesOfChat(Long chatId, Pageable pageable) {
         return messageService.getAllChatMessages(chatId, pageable).map(messageMapper::toDTO);
     }
 
     @Transactional
     public MessageResponse sendMessageToChat(Long chatId, MessageRequest messageRequest, Principal principal) {
-        // todo: вот здесь по идее должны происходить еще и события с websocket
         User user = userService.getByUsername(principal.getName());
         if (!membershipService.isMemberOfChat(user.getUserId(), chatId))
             throw new UnauthorizedException("No member of chat");
         Chat chat = chatService.getChatById(chatId);
         Message message = messageService.createMessage(messageRequest.getContent(), user, chat);
         MessageResponse dto = messageMapper.toDTO(message);
-        messagingTemplate.convertAndSend("/topic/chats/" + chatId, dto);
+        rabbitMQProducer.sendMessageToChatSubscribers("chats", chatId, dto);
         return dto;
     }
 

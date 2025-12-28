@@ -1,7 +1,7 @@
 package io.github.platovd.alnet.service.atomic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.wrapper.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.entity.User;
 import io.github.platovd.alnet.exception.entity.user.*;

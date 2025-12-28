@@ -1,4 +1,4 @@
-package io.github.platovd.alnet.authentication.contex;
+package io.github.platovd.alnet.wrapper;
 
 import io.github.platovd.alnet.exception.entity.authentication.NoAuthenticationCredentialsException;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package io.github.platovd.alnet.config;
 
-import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.wrapper.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.entrypoint.JWTEntryPointAccessDenied;
 import io.github.platovd.alnet.authentication.entrypoint.JWTEntrypointUnauthenticated;
 import io.github.platovd.alnet.authentication.filter.JWTAuthenticationFilter;

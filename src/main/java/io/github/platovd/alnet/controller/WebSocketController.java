@@ -16,7 +16,7 @@ import java.security.Principal;
 public class WebSocketController {
     private final MessageFacade messageFacade;
 
-    @MessageMapping("/chats/{chatId}")
+    @MessageMapping("/chats.{chatId}")
     public void incomingFromClientsMessageWebsocket(@DestinationVariable Long chatId, @Valid @Payload MessageRequest message, Principal principal) {
         messageFacade.sendMessageToChat(chatId, message, principal);
     }

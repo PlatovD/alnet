@@ -3,7 +3,7 @@ package io.github.platovd.alnet.service.orchestration;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
-import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.wrapper.SecurityContextWrapper;
 import io.github.platovd.alnet.dto.authentication.request.RefreshRequest;
 import io.github.platovd.alnet.dto.authentication.request.SignInRequest;
 import io.github.platovd.alnet.dto.authentication.request.SignUpRequest;

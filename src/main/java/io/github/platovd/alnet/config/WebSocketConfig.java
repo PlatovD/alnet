@@ -1,9 +1,9 @@
 package io.github.platovd.alnet.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
@@ -25,6 +25,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static io.github.platovd.alnet.authentication.filter.JWTAuthenticationFilter.*;
@@ -32,17 +33,29 @@ import static io.github.platovd.alnet.authentication.filter.JWTAuthenticationFil
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
+@Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    @Value("${frontend.port}")
-    private String port;
+    @Value("${spring.rabbitmq.host}")
+    private String rabbitHost;
+    @Value("${spring.rabbitmq.websocket.port}")
+    private Integer rabbitPort;
+    @Value("${spring.rabbitmq.username}")
+    private String rabbitUsername;
+    @Value("${spring.rabbitmq.password}")
+    private String rabbitPassword;
     private final ObjectMapper mapper;
     private final AuthenticationManager authManager;
-    private final SecurityContextWrapper securityContextWrapper;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // куда будет сервер слать данные по подпискам через STOMP. todo: RabbitMQ
-        registry.enableSimpleBroker("/topic");
+        registry.enableStompBrokerRelay("/topic")
+                .setRelayHost(rabbitHost)
+                .setRelayPort(rabbitPort)
+                .setClientLogin(rabbitUsername)
+                .setClientPasscode(rabbitPassword)
+                .setSystemLogin(rabbitUsername)
+                .setSystemPasscode(rabbitPassword);
         registry.setApplicationDestinationPrefixes("/app");
     }
 
@@ -82,7 +95,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             Authentication token = new JWTAuthToken(jwt);
                             Authentication authentication = authManager.authenticate(token);
                             accessor.setUser(authentication);
-                            securityContextWrapper.setAuthentication(authentication);
                         } catch (Exception e) {
                             throw new MessageDeliveryException("Invalid token or authentication failed");
                         }

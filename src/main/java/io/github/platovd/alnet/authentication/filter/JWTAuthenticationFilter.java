@@ -1,6 +1,6 @@
 package io.github.platovd.alnet.authentication.filter;
 
-import io.github.platovd.alnet.authentication.contex.SecurityContextWrapper;
+import io.github.platovd.alnet.wrapper.SecurityContextWrapper;
 import io.github.platovd.alnet.authentication.token.JWTAuthToken;
 import io.github.platovd.alnet.exception.entity.authentication.InvalidAccessTokenException;
 import io.micrometer.common.lang.NonNull;

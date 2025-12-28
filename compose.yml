@@ -2,8 +2,8 @@ services:
   node_alnet:
     build: ./front
     container_name: node_alnet
-    ports:
-      - "3000:3000"
+    expose:
+      - 3000
     env_file:
       - .env
     networks:
@@ -24,10 +24,12 @@ services:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
       - RABBITMQ_NODE_PORT=${RABBITMQ_NODE_PORT}
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
     volumes:
       - rabbitmq:/var/lib/rabbitmq
+    command: >
+      /bin/sh -c "rabbitmq-plugins enable --offline rabbitmq_stomp && rabbitmq-server"
     expose:
+      - 61613
       - 5672
 
   nginx_alnet:
@@ -36,8 +38,8 @@ services:
     restart: always
     networks:
       - app
-    ports:
-      - "80:80"
+    expose:
+      - 80
     volumes:
       - ./nginx:/etc/nginx/conf.d
     command: >
@@ -51,12 +53,15 @@ services:
     restart: always
     expose:
       - 8080
+    environment:
+      - SPRING_CONFIG_NAME=application
     env_file:
       - .env
     networks:
       - app
     depends_on:
       - mysql_alnet
+      - rabbitmq_alnet
 
   mysql_alnet:
     image: mysql:8.0.43
@@ -79,6 +84,8 @@ services:
 networks:
   app:
     driver: bridge
+  public_net:
+    external: true
 
 volumes:
   mysql_data:
